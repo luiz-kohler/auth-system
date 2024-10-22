@@ -4,7 +4,7 @@
     {
         public int RoleId { get; set; }
         public virtual Role Role { get; set; }
-        public int ActionId { get; set; }
-        public virtual Action Action { get; set; }
+        public int EndpointId { get; set; }
+        public virtual Endpoint Endpoint { get; set; }
     }
 }
