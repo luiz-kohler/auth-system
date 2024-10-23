@@ -1,6 +1,8 @@
-﻿namespace Auth_API.Entities
+﻿using Auth_API.Common;
+
+namespace Auth_API.Entities
 {
-    public class RoleUser
+    public class RoleUser : IBaseEntity
     {
         public int RoleId { get; set; }
         public virtual Role Role { get; set; }

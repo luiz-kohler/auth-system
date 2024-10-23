@@ -1,6 +1,8 @@
-﻿namespace Auth_API.Entities
+﻿using Auth_API.Common;
+
+namespace Auth_API.Entities
 {
-    public class Project
+    public class Project : IBaseEntity
     {
         public int Id { get; set; }
         public required string Name { get; set; }
