@@ -5,48 +5,42 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "CONNECTION_STRING": "Server=localhost;Database=db;User Id=sa;Password=Admin@123;Trusted_Connection=False;TrustServerCertificate=True; MultipleActiveResultSets=true"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5087"
+      "applicationUrl": "http://localhost:5018"
     },
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "CONNECTION_STRING": "Server=localhost;Database=db;User Id=sa;Password=Admin@123;Trusted_Connection=False;TrustServerCertificate=True; MultipleActiveResultSets=true"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7041;http://localhost:5087"
+      "applicationUrl": "https://localhost:7019;http://localhost:5018"
     },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "Container (Dockerfile)": {
-      "commandName": "Docker",
-      "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
-      "environmentVariables": {
-        "ASPNETCORE_HTTPS_PORTS": "8081",
-        "ASPNETCORE_HTTP_PORTS": "8080"
-      },
-      "publishAllPorts": true,
-      "useSSL": true
-    }
+    //"Container (Dockerfile)": {
+    //  "commandName": "Docker",
+    //  "launchBrowser": true,
+    //  "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+    //  "environmentVariables": {
+    //    "ASPNETCORE_HTTPS_PORTS": "8081",
+    //    "ASPNETCORE_HTTP_PORTS": "8080"
+    //  },
+    //  "publishAllPorts": true,
+    //  "useSSL": true
+    //}
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:16917",
-      "sslPort": 44318
+      "applicationUrl": "http://localhost:45902",
+      "sslPort": 44373
     }
   }
 }
