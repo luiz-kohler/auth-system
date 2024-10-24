@@ -7,7 +7,7 @@ namespace Auth_API.Entities
         public int Id { get; set; }
         public string Name { get; set; }
         public virtual IReadOnlyCollection<Role> Roles { get; set; }
-        public virtual IReadOnlyCollection<User> Users { get; set; }
         public virtual IReadOnlyCollection<Endpoint> Endpoints { get; set; }
+        public virtual IReadOnlyCollection<UserProject> UserProjects { get; set; }
     }
 }

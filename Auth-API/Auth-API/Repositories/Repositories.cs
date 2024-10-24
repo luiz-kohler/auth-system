@@ -34,4 +34,9 @@ namespace Auth_API.Repositories
     {
         public UserRepository(Context context) : base(context) { }
     }
+
+    public class UserProjectRepository : BaseEntityRepository<UserProject>, IUserProjectRepository
+    {
+        public UserProjectRepository(Context context) : base(context) { }
+    }
 }

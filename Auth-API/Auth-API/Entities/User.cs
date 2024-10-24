@@ -8,8 +8,7 @@ namespace Auth_API.Entities
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public virtual int ProjectId { get; set; }
-        public virtual Project Project { get; set; }
         public virtual IReadOnlyCollection<RoleUser> RoleUsers { get; set; }
+        public virtual IReadOnlyCollection<UserProject> UserProjects { get; set; }
     }
 }

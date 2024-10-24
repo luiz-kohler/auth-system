@@ -12,6 +12,7 @@ namespace Auth_API.Infra
         public DbSet<RoleEndpoint> RolesEndpoints { get; set; }
         public DbSet<RoleUser> RolesUsers { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<UserProject> UsersProjects { get; set; }
 
         public Context(DbContextOptions options) : base(options) { }
 
@@ -25,6 +26,9 @@ namespace Auth_API.Infra
 
             modelBuilder.Entity<RoleUser>()
                 .HasKey(ru => new { ru.RoleId, ru.UserId });
+
+            modelBuilder.Entity<UserProject>()
+                .HasKey(up => new { up.UserId, up.ProjectId });
         }
     }
 }

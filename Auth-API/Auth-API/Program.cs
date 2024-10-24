@@ -20,6 +20,7 @@ builder.Services.AddTransient<IEndpointRepository, EndpointRepository>();
 builder.Services.AddTransient<IRoleRepository, RoleRepository>();
 builder.Services.AddTransient<IRoleUserRepository, RoleUserRepository>();
 builder.Services.AddTransient<IRoleEndpointRepository, RoleEndpointRepository>();
+builder.Services.AddTransient<IUserProjectRepository, UserProjectRepository>();
 
 // services 
 builder.Services.AddTransient<IUserService, UserService>();

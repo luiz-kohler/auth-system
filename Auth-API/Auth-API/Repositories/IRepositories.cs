@@ -10,4 +10,5 @@ namespace Auth_API.Repositories
     public interface IRoleEndpointRepository : IBaseEntityRepository<RoleEndpoint> { }
     public interface IRoleUserRepository : IBaseEntityRepository<RoleUser> { }
     public interface IUserRepository : IBaseEntityRepository<User> { }
+    public interface IUserProjectRepository : IBaseEntityRepository<UserProject> { }
 }
