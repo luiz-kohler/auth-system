@@ -1,5 +1,7 @@
 using Auth_API.Common;
 using Auth_API.Infra;
+using Auth_API.Repositories;
+using Auth_API.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +11,18 @@ builder.Services.AddDbContextPool<Context>(opt => opt.UseSqlServer(builder.Confi
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// repositories
+builder.Services.AddTransient(typeof(IBaseEntityRepository<>), typeof(BaseEntityRepository<>));
+builder.Services.AddTransient<IUserRepository, UserRepository>();
+builder.Services.AddTransient<IProjectRepository, ProjectRepository>();
+builder.Services.AddTransient<IEndpointRepository, EndpointRepository>();
+builder.Services.AddTransient<IRoleRepository, RoleRepository>();
+builder.Services.AddTransient<IRoleUserRepository, RoleUserRepository>();
+builder.Services.AddTransient<IRoleEndpointRepository, RoleEndpointRepository>();
+
+// services 
+builder.Services.AddTransient<IUserService, UserService>();
 
 builder.Services.AddExceptionHandler(options =>
 {
