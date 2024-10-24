@@ -19,6 +19,11 @@ namespace Auth_API.Common
             await _context.Set<T>().AddAsync(entity);
         }
 
+        public async Task Add(IEnumerable<T> entities)
+        {
+            await _context.Set<T>().AddRangeAsync(entities);
+        }
+
         public async Task<IEnumerable<T>> AllIncluding(params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _context.Set<T>();
