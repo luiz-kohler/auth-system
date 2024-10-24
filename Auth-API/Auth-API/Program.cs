@@ -24,6 +24,8 @@ builder.Services.AddTransient<IUserProjectRepository, UserProjectRepository>();
 
 // services 
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IProjectService, ProjectService>();
+
 
 builder.Services.AddExceptionHandler(options =>
 {
