@@ -1,4 +1,5 @@
-﻿using Auth_API.DTOs;
+﻿using Auth_API.Common;
+using Auth_API.DTOs;
 using Auth_API.Entities;
 using Auth_API.Exceptions;
 using Auth_API.Repositories;
@@ -9,17 +10,17 @@ namespace Auth_API.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IProjectRepository _projectRepository;
+        private readonly ITokenHandler _tokenHandler;
 
         public UserService(
             IUserRepository userRepository,
-            IProjectRepository projectRepository)
+            ITokenHandler tokenHandler)
         {
             _userRepository = userRepository;
-            _projectRepository = projectRepository;
+            _tokenHandler = tokenHandler;
         }
 
-        public async Task Create(CreateUserRequest request)
+        public async Task<GetUserTokenResposne> Create(CreateUserRequest request)
         {
             var result = new CreateUserValidator().Validate(request);
 
@@ -33,11 +34,13 @@ namespace Auth_API.Services
 
             await _userRepository.Add(user);
             await _userRepository.Commit();
+
+            return new() { Token = _tokenHandler.Generate(user) };
         }
     }
 
     public interface IUserService
     {
-        Task Create(CreateUserRequest request);
+        Task<GetUserTokenResposne> Create(CreateUserRequest request);
     }
 }

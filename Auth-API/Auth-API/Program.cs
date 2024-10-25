@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContextPool<Context>(opt => opt.UseSqlServer(builder.Configuration.GetValue<string>("CONNECTION_STRING")));
+builder.Services.AddDbContextPool<Context>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("MSSQL")));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -25,6 +25,9 @@ builder.Services.AddTransient<IUserProjectRepository, UserProjectRepository>();
 // services 
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IProjectService, ProjectService>();
+
+// handlers
+builder.Services.AddTransient<ITokenHandler, TokenHandler>();
 
 
 builder.Services.AddExceptionHandler(options =>

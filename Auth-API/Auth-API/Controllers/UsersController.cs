@@ -17,8 +17,8 @@ namespace Auth_API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
         {
-            await _service.Create(request);
-            return Ok();
+            var token = await _service.Create(request);
+            return Ok(token);
         }
     }
 }
