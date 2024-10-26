@@ -7,27 +7,27 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContextPool<Context>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("MSSQL")));
+builder.Services.AddDbContextPool<Context>(opt => opt.UseSqlServer(builder.Configuration["ConnectionStringMSSQL"]));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // repositories
-builder.Services.AddTransient(typeof(IBaseEntityRepository<>), typeof(BaseEntityRepository<>));
-builder.Services.AddTransient<IUserRepository, UserRepository>();
-builder.Services.AddTransient<IProjectRepository, ProjectRepository>();
-builder.Services.AddTransient<IEndpointRepository, EndpointRepository>();
-builder.Services.AddTransient<IRoleRepository, RoleRepository>();
-builder.Services.AddTransient<IRoleUserRepository, RoleUserRepository>();
-builder.Services.AddTransient<IRoleEndpointRepository, RoleEndpointRepository>();
-builder.Services.AddTransient<IUserProjectRepository, UserProjectRepository>();
+builder.Services.AddScoped(typeof(IBaseEntityRepository<>), typeof(BaseEntityRepository<>));
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<IEndpointRepository, EndpointRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoleUserRepository, RoleUserRepository>();
+builder.Services.AddScoped<IRoleEndpointRepository, RoleEndpointRepository>();
+builder.Services.AddScoped<IUserProjectRepository, UserProjectRepository>();
 
 // services 
-builder.Services.AddTransient<IUserService, UserService>();
-builder.Services.AddTransient<IProjectService, ProjectService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
 
 // handlers
-builder.Services.AddTransient<ITokenHandler, TokenHandler>();
+builder.Services.AddScoped<ITokenHandler, TokenHandler>();
 
 
 builder.Services.AddExceptionHandler(options =>
@@ -39,9 +39,14 @@ builder.Services.AddExceptionHandler(options =>
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
+//app.UseMiddleware<GlobalRoutePrefixMiddleware>($"/{builder.Configuration["Project"]}");
+//app.UseMiddleware<RoleBasedTokenMiddleware>();
+
+app.UseRouting();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();

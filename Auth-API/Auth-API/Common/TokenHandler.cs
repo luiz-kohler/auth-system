@@ -18,14 +18,15 @@ namespace Auth_API.Common
         public string Generate(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var key = Encoding.ASCII.GetBytes(_configuration["JwtKey"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                // TODO: FIX THIS IN THE FUTURE
+                Expires = DateTime.UtcNow.AddDays(999),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 //TODO: IMPLEMENT IN FUTURE
                 //Issuer = _configuration["Jwt:Issuer"],
