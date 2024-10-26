@@ -39,9 +39,10 @@ builder.Services.AddExceptionHandler(options =>
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
-//app.UseMiddleware<GlobalRoutePrefixMiddleware>($"/{builder.Configuration["Project"]}");
+app.UseMiddleware<GlobalRoutePrefixMiddleware>($"/{builder.Configuration["Project"]}");
 //app.UseMiddleware<RoleBasedTokenMiddleware>();
 
+app.UsePathBase(new PathString($"/{builder.Configuration["Project"]}"));
 app.UseRouting();
 
 app.UseSwagger();
