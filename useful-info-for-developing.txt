@@ -1,1 +1,35 @@
-TOKEN: VALIDO
+REQUESTS:
+
+CREATE USER:
+{
+  "name": "marcelinho do po",
+  "email": "marcelinhoaspirapo@gmail.com",
+  "password": "12345678"
+}   
+
+CREATE PROJECT:
+{
+  "name": "auth-api",
+  "managerId": 1002,
+  "endpoints": [
+    "/auth-tests/no-auth-needed",
+    "/auth-tests/auth-needed",
+    "/projects",
+    "/users"
+  ]
+}
+
+TOKEN VALIDO:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxMDAyIiwibmJmIjoxNzI5OTA2ODg2LCJleHAiOjE4MTYyMjA0ODYsImlhdCI6MTcyOTkwNjg4Nn0.EsuAGSkea0kZMe6Xg46NOJQPLdFS77filFpCbJ-VPaY
+
+
+BASIC ENDPOINT:
+http://localhost:5018/auth-api/auth-tests/auth-needed
+
+-- 1003
+SELECT * FROM Endpoints WHERE Route = '/auth-tests/auth-needed';
+
+-- ROLE: 1002 - ENDPOINT: 1003
+SELECT * FROM RolesEndpoints WHERE EndpointId = 1003;
+DELETE FROM RolesEndpoints WHERE EndpointId = 1003;
+INSERT INTO RolesEndpoints VALUES (1002, 1003);
