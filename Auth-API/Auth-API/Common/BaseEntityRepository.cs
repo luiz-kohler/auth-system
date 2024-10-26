@@ -11,7 +11,7 @@ namespace Auth_API.Common
 
         public BaseEntityRepository(Context context)
         {
-                _context = context;
+            _context = context;
         }
 
         public async Task Add(T entity)
