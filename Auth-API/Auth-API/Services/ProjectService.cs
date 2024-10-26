@@ -40,6 +40,7 @@ namespace Auth_API.Services
         {
             ValidateRequest(request);
 
+            //TODO: VALIDATE IF PROJECTS NAME ALERADY EXISTS IN DATABASE, BECAUSE IT WILL BE UNIQUE
             var manager = await GetManagerById(request.ManagerId);
             var project = await CreateProject(request);
             var endpoints = await CreateProjectEndpoints(request, project);

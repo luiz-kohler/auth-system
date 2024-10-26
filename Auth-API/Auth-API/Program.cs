@@ -39,6 +39,8 @@ builder.Services.AddExceptionHandler(options =>
     options.AllowStatusCode404Response = true;
 });
 
+//TODO: FIX TO VALIDATE IF THE ENDPOINT EXISTS, AND IF DOES NOT EXIST,  IT WILL RETURN 404
+
 // TODO: IMPROVE THIS IMPLEMENTATION 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

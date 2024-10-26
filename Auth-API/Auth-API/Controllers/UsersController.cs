@@ -20,5 +20,8 @@ namespace Auth_API.Controllers
             var token = await _service.Create(request);
             return Ok(token);
         }
+
+        //TODO: Create Login Endpoint
+        //TODO: Create Get All From a Project Endpoint
     }
 }

@@ -16,6 +16,7 @@ namespace Auth_API.Common
             _serviceProvider = serviceProvider;
         }
 
+        //TODO: CREATE A CUSTOM EXCEPTION FOR NO AUTH
         public async Task Invoke(HttpContext context)
         {
             using var scope = _serviceProvider.CreateScope();
@@ -32,6 +33,7 @@ namespace Auth_API.Common
             if (!handler.CanReadToken(token))
                 throw new InvalidOperationException();
 
+            //TODO: USE SOME ENUM FOR THIS
             var jwtToken = handler.ReadJwtToken(token);
             var nameIdentifierClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
             if (string.IsNullOrEmpty(nameIdentifierClaim))
