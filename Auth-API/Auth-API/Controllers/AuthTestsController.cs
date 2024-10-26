@@ -13,7 +13,6 @@ namespace Auth_API.Controllers
             return Ok("^_~");
         }
 
-        [Authorize]
         [HttpGet("auth-needed")]
         public ActionResult AuthNeeded()
         {
