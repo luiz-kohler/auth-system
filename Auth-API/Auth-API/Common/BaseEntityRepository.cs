@@ -7,7 +7,7 @@ namespace Auth_API.Common
     public class BaseEntityRepository<T> : IBaseEntityRepository<T>
             where T : class, IBaseEntity, new()
     {
-        private readonly Context _context;
+        protected readonly Context _context;
 
         public BaseEntityRepository(Context context)
         {
