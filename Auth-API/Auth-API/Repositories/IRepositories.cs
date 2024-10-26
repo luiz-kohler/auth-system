@@ -9,6 +9,9 @@ namespace Auth_API.Repositories
     public interface IRoleRepository : IBaseEntityRepository<Role> { }
     public interface IRoleEndpointRepository : IBaseEntityRepository<RoleEndpoint> { }
     public interface IRoleUserRepository : IBaseEntityRepository<RoleUser> { }
-    public interface IUserRepository : IBaseEntityRepository<User> { }
     public interface IUserProjectRepository : IBaseEntityRepository<UserProject> { }
+    public interface IUserRepository : IBaseEntityRepository<User>
+    {
+        Task<bool> UserHasAccess(int userId, int endpointId);
+    }
 }

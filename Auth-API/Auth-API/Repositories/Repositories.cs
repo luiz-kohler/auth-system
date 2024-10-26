@@ -1,6 +1,9 @@
 ﻿using Auth_API.Common;
 using Auth_API.Entities;
 using Auth_API.Infra;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Endpoint = Auth_API.Entities.Endpoint;
 
 namespace Auth_API.Repositories
@@ -33,6 +36,21 @@ namespace Auth_API.Repositories
     public class UserRepository : BaseEntityRepository<User>, IUserRepository
     {
         public UserRepository(Context context) : base(context) { }
+
+        public async Task<bool> UserHasAccess(int userId, int endpointId)
+        {
+            var rolesWithAccess = await _context
+                .Set<RoleEndpoint>()
+                .Where(roleEndpoint => roleEndpoint.EndpointId == endpointId)
+                .ToListAsync();
+
+            if(!rolesWithAccess.Any())
+                return false;
+
+            return await _context
+                .Set<RoleUser>()
+                .AnyAsync(roleUser => roleUser.UserId == userId && rolesWithAccess.Select(role => role.EndpointId).Contains(endpointId));
+        }
     }
 
     public class UserProjectRepository : BaseEntityRepository<UserProject>, IUserProjectRepository

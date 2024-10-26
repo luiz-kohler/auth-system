@@ -2,8 +2,11 @@ using Auth_API.Common;
 using Auth_API.Infra;
 using Auth_API.Repositories;
 using Auth_API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +30,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 
 // handlers
-builder.Services.AddScoped<ITokenHandler, TokenHandler>();
+builder.Services.AddScoped<ITokenHandler, Auth_API.Common.TokenHandler>();
 
 
 builder.Services.AddExceptionHandler(options =>
@@ -36,11 +39,27 @@ builder.Services.AddExceptionHandler(options =>
     options.AllowStatusCode404Response = true;
 });
 
+// TODO: IMPROVE THIS IMPLEMENTATION 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            //ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            //ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtKey"]))
+        };
+    });
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 app.UseMiddleware<GlobalRoutePrefixMiddleware>($"/{builder.Configuration["Project"]}");
-//app.UseMiddleware<RoleBasedTokenMiddleware>();
+app.UseMiddleware<RoleBasedTokenMiddleware>();
 
 app.UsePathBase(new PathString($"/{builder.Configuration["Project"]}"));
 app.UseRouting();
@@ -49,7 +68,10 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
