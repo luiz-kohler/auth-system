@@ -41,12 +41,12 @@ namespace Auth_API.Services
             ValidateRequest(request);
 
             //TODO: VALIDATE IF PROJECTS NAME ALERADY EXISTS IN DATABASE, BECAUSE IT WILL BE UNIQUE
-            var manager = await GetManagerById(request.ManagerId);
+            var admin = await GetAdminById(request.AdminId);
             var project = await CreateProject(request);
             var endpoints = await CreateProjectEndpoints(request, project);
-            await CreateManagerProjectRelationship(manager, project);
+            await CreateadminProjectRelationship(admin, project);
             var adminRole = await CreateAdminRole(project);
-            await AssignManagerToAdminRole(manager, adminRole);
+            await AssignAdminToAdminRole(admin, adminRole);
             await AssignAdminRoleToProjectEndpoints(adminRole, endpoints);
 
             await _projectRepository.Commit();
@@ -60,14 +60,14 @@ namespace Auth_API.Services
                 throw new ValidationException(result.Errors);
         }
 
-        private async Task<User> GetManagerById(int managerId)
+        private async Task<User> GetAdminById(int adminId)
         {
-            var manager = await _userRepository.GetSingle(user => user.Id == managerId);
+            var admin = await _userRepository.GetSingle(user => user.Id == adminId);
 
-            if (manager == null)
-                throw new NotFoundException("User manager not found");
+            if (admin == null)
+                throw new NotFoundException("User admin not found");
 
-            return manager;
+            return admin;
         }
 
         private async Task<Project> CreateProject(CreateProjectRequest request)
@@ -95,12 +95,12 @@ namespace Auth_API.Services
             return endpoints;
         }
 
-        private async Task CreateManagerProjectRelationship(User manager, Project project)
+        private async Task CreateadminProjectRelationship(User admin, Project project)
         {
             var userProject = new UserProject
             {
                 Project = project,
-                User = manager
+                User = admin
             };
 
             await _userProjectRepository.Add(userProject);
@@ -118,11 +118,11 @@ namespace Auth_API.Services
             return adminRole;
         }
 
-        private async Task AssignManagerToAdminRole(User manager, Role adminRole)
+        private async Task AssignAdminToAdminRole(User admin, Role adminRole)
         {
             var roleUser = new RoleUser
             {
-                User = manager,
+                User = admin,
                 Role = adminRole
             };
 
