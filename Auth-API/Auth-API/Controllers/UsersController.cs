@@ -21,7 +21,13 @@ namespace Auth_API.Controllers
             return Ok(token);
         }
 
-        //TODO: Create Login Endpoint
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var token = await _service.Login(request);
+            return Ok(token);
+        }
+
         //TODO: Create Get All From a Project Endpoint
     }
 }

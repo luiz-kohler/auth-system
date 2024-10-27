@@ -37,10 +37,22 @@ namespace Auth_API.Services
 
             return new() { Token = _tokenHandler.Generate(user) };
         }
+
+        //TODO: Validate request before search in repo
+        public async Task<GetUserTokenResposne> Login(LoginRequest request)
+        {
+            var user = await _userRepository.GetSingle(user => user.Email == request.Email && user.Password == request.Password);
+
+            if (user == null)
+                throw new BadRequestException("Incorrect credentials");
+
+            return new() { Token = _tokenHandler.Generate(user) };
+        }
     }
 
     public interface IUserService
     {
         Task<GetUserTokenResposne> Create(CreateUserRequest request);
+        Task<GetUserTokenResposne> Login(LoginRequest request);
     }
 }
