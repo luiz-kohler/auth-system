@@ -15,7 +15,8 @@ CREATE PROJECT:
     "/auth-tests/no-auth-needed",
     "/auth-tests/auth-needed",
     "/projects",
-    "/users"
+    "/users",
+    "/swagger/index.html"
   ]
 }
 
