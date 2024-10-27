@@ -34,6 +34,11 @@ namespace Auth_API.Common
             return await query.ToListAsync();
         }
 
+        public async Task<bool> Any(Expression<Func<T, bool>> predicate)
+        {
+            return await _context.Set<T>().AnyAsync(predicate);
+        }
+
         public async Task Commit()
         {
             await _context.SaveChangesAsync();

@@ -9,6 +9,7 @@ namespace Auth_API.Common
         Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> predicate);
         Task<int> Count();
         Task<int> Count(Expression<Func<T, bool>> predicate);
+        Task<bool> Any(Expression<Func<T, bool>> predicate);
         Task<T> GetSingle(Expression<Func<T, bool>> predicate);
         Task<T> GetSingle(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
         Task Add(T entity);
