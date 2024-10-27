@@ -22,7 +22,9 @@ namespace Auth_API.Common
             var endpointRoute = context.Request.Path.Value?.Replace($"/{projectName}", "") ?? "";
 
             var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-            if (configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") == "local" && endpointRoute.StartsWith("/swagger/"))
+            var environmentsWithSwaggerAvailable = new List<string>() { Environments.Local, Environments.Dev };
+            var currentEnvironment = configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") ?? "";
+            if (environmentsWithSwaggerAvailable.Contains(currentEnvironment) && endpointRoute.StartsWith("/swagger/"))
             {
                 await _next(context);
                 return;
@@ -68,12 +70,11 @@ namespace Auth_API.Common
                 throw new UnauthorizedAccessException("Invalid authorization token.");
 
             var jwtToken = handler.ReadJwtToken(token);
-            var nameIdentifierClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+            var nameIdentifierClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == TokenClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(nameIdentifierClaim))
                 throw new UnauthorizedAccessException("User identifier claim is missing in the token.");
 
             return int.Parse(nameIdentifierClaim);
         }
-
     }
 }

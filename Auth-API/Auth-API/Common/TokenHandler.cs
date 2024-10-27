@@ -42,4 +42,9 @@ namespace Auth_API.Common
     {
         string Generate(User user);
     }
+
+    public static class TokenClaimTypes
+    {
+        public static string NameIdentifier => "nameid";
+    }
 }
