@@ -25,6 +25,19 @@ namespace Auth_API.Common
             var projectRepository = scope.ServiceProvider.GetRequiredService<IProjectRepository>();
             var endpointRepository = scope.ServiceProvider.GetRequiredService<IEndpointRepository>();
 
+            var projectName = context.Request.PathBase.Value.Replace("/", "");
+            var project = await projectRepository.GetSingle(project => project.Name == projectName);
+
+            var endpointRoute = context.Request.Path.Value.Replace($"/{projectName}", "");
+            var endpoint = await endpointRepository.GetSingle(endpoint => endpoint.ProjectId == project.Id && endpoint.Route == endpointRoute);
+
+            if (project == null || endpoint == null)
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsync("Endpoint not found.");
+                return;
+            }
+
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
             if (string.IsNullOrEmpty(token))
                 throw new InvalidOperationException();
@@ -42,16 +55,6 @@ namespace Auth_API.Common
             int userId = int.Parse(nameIdentifierClaim);
             var user = await userRepository.GetSingle(user => user.Id == userId);
             if (user == null)
-                throw new InvalidOperationException();
-
-            var projectName = context.Request.PathBase.Value.Replace("/", "");
-            var project = await projectRepository.GetSingle(project => project.Name == projectName);
-            if (project == null)
-                throw new InvalidOperationException();
-
-            var endpointRoute = context.Request.Path.Value.Replace($"/{projectName}", "");
-            var endpoint = await endpointRepository.GetSingle(endpoint => endpoint.ProjectId == project.Id && endpoint.Route == endpointRoute);
-            if (endpoint == null)
                 throw new InvalidOperationException();
 
             var userHasAccess = await userRepository.UserHasAccess(user.Id, endpoint.Id);
