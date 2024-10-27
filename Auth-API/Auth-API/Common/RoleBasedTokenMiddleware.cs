@@ -1,7 +1,5 @@
 ﻿using Auth_API.Repositories;
-using Auth_API.Services;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace Auth_API.Common
 {
@@ -16,52 +14,66 @@ namespace Auth_API.Common
             _serviceProvider = serviceProvider;
         }
 
-        //TODO: CREATE A CUSTOM EXCEPTION FOR NO AUTH
         public async Task Invoke(HttpContext context)
         {
             using var scope = _serviceProvider.CreateScope();
 
-            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-            var projectRepository = scope.ServiceProvider.GetRequiredService<IProjectRepository>();
+            var projectName = context.Request.PathBase.Value?.Replace("/", "") ?? "";
+            var endpointRoute = context.Request.Path.Value?.Replace($"/{projectName}", "") ?? "";
+
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            if (configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") == "local" && endpointRoute.StartsWith("/swagger/"))
+            {
+                await _next(context);
+                return;
+            }
+
             var endpointRepository = scope.ServiceProvider.GetRequiredService<IEndpointRepository>();
-
-            var projectName = context.Request.PathBase.Value.Replace("/", "");
-            var project = await projectRepository.GetSingle(project => project.Name == projectName);
-
-            var endpointRoute = context.Request.Path.Value.Replace($"/{projectName}", "");
-            var endpoint = await endpointRepository.GetSingle(endpoint => endpoint.ProjectId == project.Id && endpoint.Route == endpointRoute);
-
-            if (project == null || endpoint == null)
+            var endpoint = await endpointRepository.GetSingle(endpoint => endpoint.Project.Name == projectName && endpoint.Route == endpointRoute);
+            if (endpoint == null)
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
                 await context.Response.WriteAsync("Endpoint not found.");
                 return;
             }
 
+            if (endpoint.IsPublic)
+            {
+                await _next(context);
+                return;
+            }
+
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            if (string.IsNullOrEmpty(token))
-                throw new InvalidOperationException();
+            var userId = ValidateAndExtractUserId(token);
 
-            var handler = new JwtSecurityTokenHandler();
-            if (!handler.CanReadToken(token))
-                throw new InvalidOperationException();
-
-            //TODO: USE SOME ENUM FOR THIS
-            var jwtToken = handler.ReadJwtToken(token);
-            var nameIdentifierClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
-            if (string.IsNullOrEmpty(nameIdentifierClaim))
-                throw new InvalidOperationException();
-
-            int userId = int.Parse(nameIdentifierClaim);
-            var user = await userRepository.GetSingle(user => user.Id == userId);
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            var user = await userRepository.GetSingle(u => u.Id == userId);
             if (user == null)
-                throw new InvalidOperationException();
+                throw new UnauthorizedAccessException("User not found.");
 
-            var userHasAccess = await userRepository.UserHasAccess(user.Id, endpoint.Id);
+            var userHasAccess = await userRepository.UserHasAccess(userId, endpoint.Id);
             if (!userHasAccess)
-                throw new InvalidOperationException();
+                throw new UnauthorizedAccessException("User does not have access to this endpoint.");
 
             await _next(context);
         }
+
+        private int ValidateAndExtractUserId(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                throw new UnauthorizedAccessException("Authorization token is missing.");
+
+            var handler = new JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(token))
+                throw new UnauthorizedAccessException("Invalid authorization token.");
+
+            var jwtToken = handler.ReadJwtToken(token);
+            var nameIdentifierClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+            if (string.IsNullOrEmpty(nameIdentifierClaim))
+                throw new UnauthorizedAccessException("User identifier claim is missing in the token.");
+
+            return int.Parse(nameIdentifierClaim);
+        }
+
     }
 }

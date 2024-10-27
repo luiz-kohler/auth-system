@@ -19,6 +19,7 @@ namespace Auth_API.Common
                 NotFoundException exception => (HttpStatusCode.BadRequest, exception.Message),
                 BadRequestException exception => (HttpStatusCode.BadRequest, exception.Message),
                 InvalidOperationException exception => (HttpStatusCode.Unauthorized, "you do not have access for this action"),
+                UnauthorizedAccessException exception => (HttpStatusCode.Unauthorized, exception.Message),
                 _ => (HttpStatusCode.InternalServerError, "unexpected error")
             };
 
