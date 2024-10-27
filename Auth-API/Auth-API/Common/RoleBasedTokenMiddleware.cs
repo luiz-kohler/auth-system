@@ -45,7 +45,12 @@ namespace Auth_API.Common
                 return;
             }
 
+            var tokenHandler = scope.ServiceProvider.GetRequiredService<ITokenHandler>();
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+            if(!tokenHandler.Validate(token))
+                throw new UnauthorizedAccessException("Token is invalid.");
+
             var userId = ValidateAndExtractUserId(token);
 
             var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();

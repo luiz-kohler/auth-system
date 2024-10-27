@@ -18,14 +18,13 @@ namespace Auth_API.Common
         public string Generate(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["JwtKey"]);
+            var key = Encoding.UTF8.GetBytes(_configuration["JwtKey"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 }),
-                // TODO: FIX THIS IN THE FUTURE
                 Expires = DateTime.UtcNow.AddDays(999),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             };
@@ -33,11 +32,37 @@ namespace Auth_API.Common
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
+        public bool Validate(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["JwtKey"]);
+
+            try
+            {
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateLifetime = true,
+                    ValidateIssuer = false, 
+                    ValidateAudience = false
+                }, out SecurityToken validatedToken);
+
+                return true; 
+            }
+            catch
+            {
+                return false; 
+            }
+        }
     }
 
     public interface ITokenHandler
     {
         string Generate(User user);
+        bool Validate(string token);
+
     }
 
     public static class TokenClaimTypes
