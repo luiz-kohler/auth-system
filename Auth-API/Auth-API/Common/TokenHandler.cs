@@ -28,9 +28,6 @@ namespace Auth_API.Common
                 // TODO: FIX THIS IN THE FUTURE
                 Expires = DateTime.UtcNow.AddDays(999),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-                //TODO: IMPLEMENT IN FUTURE
-                //Issuer = _configuration["Jwt:Issuer"],
-                //Audience = _configuration["Jwt:Audience"],
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
