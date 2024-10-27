@@ -4,7 +4,6 @@ namespace Auth_API.Common
 {
     public interface IBaseEntityRepository<T> where T : class, IBaseEntity, new()
     {
-        Task<IEnumerable<T>> AllIncluding(params Expression<Func<T, object>>[] includeProperties);
         Task<IEnumerable<T>> GetAll();
         Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> predicate);
         Task<int> Count();

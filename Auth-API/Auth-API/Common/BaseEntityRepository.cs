@@ -14,27 +14,17 @@ namespace Auth_API.Common
             _context = context;
         }
 
-        public async Task Add(T entity)
+        public virtual async Task Add(T entity)
         {
             await _context.Set<T>().AddAsync(entity);
         }
 
-        public async Task Add(IEnumerable<T> entities)
+        public virtual async Task Add(IEnumerable<T> entities)
         {
             await _context.Set<T>().AddRangeAsync(entities);
         }
 
-        public async Task<IEnumerable<T>> AllIncluding(params Expression<Func<T, object>>[] includeProperties)
-        {
-            IQueryable<T> query = _context.Set<T>();
-
-            foreach (var includeProperty in includeProperties)
-                query = query.Include(includeProperty);
-
-            return await query.ToListAsync();
-        }
-
-        public async Task<bool> Any(Expression<Func<T, bool>> predicate)
+        public virtual async Task<bool> Any(Expression<Func<T, bool>> predicate)
         {
             return await _context.Set<T>().AnyAsync(predicate);
         }
@@ -44,45 +34,45 @@ namespace Auth_API.Common
             await _context.SaveChangesAsync();
         }
 
-        public async Task<int> Count()
+        public virtual async Task<int> Count()
         {
             return await _context.Set<T>().CountAsync();
         }
 
-        public async Task<int> Count(Expression<Func<T, bool>> predicate)
+        public virtual async Task<int> Count(Expression<Func<T, bool>> predicate)
         {
             return await _context.Set<T>().CountAsync(predicate);
         }
 
-        public async Task Delete(T entity)
+        public virtual async Task Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
             await Commit();
         }
 
-        public async Task DeleteWhere(Expression<Func<T, bool>> predicate)
+        public virtual async Task DeleteWhere(Expression<Func<T, bool>> predicate)
         {
             var entities = _context.Set<T>().Where(predicate);
             _context.Set<T>().RemoveRange(entities);
             await Commit();
         }
 
-        public async Task<IEnumerable<T>> GetAll()
+        public virtual async Task<IEnumerable<T>> GetAll()
         {
             return await _context.Set<T>().ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> predicate)
+        public virtual async Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> predicate)
         {
             return await _context.Set<T>().Where(predicate).ToListAsync();
         }
 
-        public async Task<T> GetSingle(Expression<Func<T, bool>> predicate)
+        public virtual async Task<T> GetSingle(Expression<Func<T, bool>> predicate)
         {
             return await _context.Set<T>().FirstOrDefaultAsync(predicate);
         }
 
-        public async Task<T> GetSingle(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
+        public virtual async Task<T> GetSingle(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _context.Set<T>();
 
@@ -92,7 +82,7 @@ namespace Auth_API.Common
             return await query.FirstOrDefaultAsync(predicate);
         }
 
-        public async Task Update(T entity)
+        public virtual async Task Update(T entity)
         {
             _context.Set<T>().Update(entity);
             await Commit();
