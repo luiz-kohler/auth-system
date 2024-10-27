@@ -83,9 +83,11 @@ namespace Auth_API.Services
 
         private async Task<List<Endpoint>> CreateProjectEndpoints(CreateProjectRequest request, Project project)
         {
-            var endpoints = request.Endpoints.Select(route => new Endpoint
+            var endpoints = request.Endpoints.Select(endpoint => new Endpoint
             {
-                Route = route,
+                Route = endpoint.Route,
+                HttpMethod = endpoint.HttpMethod,
+                IsPublic = endpoint.IsPublic,
                 Project = project
             }).ToList();
 
