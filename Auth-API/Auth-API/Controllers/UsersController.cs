@@ -28,6 +28,12 @@ namespace Auth_API.Controllers
             return Ok(token);
         }
 
-        //TODO: Create Get All From a Project Endpoint
+        [HttpGet]
+        public async Task<IActionResult> GetMany([FromQuery] GetManyUsersRequest request)
+        {
+            var users = await _service.GetMany(request);
+            return Ok(users);
+        }
+
     }
 }

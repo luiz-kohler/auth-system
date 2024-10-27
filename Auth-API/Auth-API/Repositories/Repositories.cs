@@ -2,6 +2,7 @@
 using Auth_API.Entities;
 using Auth_API.Infra;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Linq.Expressions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Endpoint = Auth_API.Entities.Endpoint;
@@ -50,6 +51,16 @@ namespace Auth_API.Repositories
             return await _context
                 .Set<RoleUser>()
                 .AnyAsync(roleUser => roleUser.UserId == userId && rolesWithAccess.Select(role => role.EndpointId).Contains(endpointId));
+        }
+
+        public override async Task<IEnumerable<User>> GetAll(Expression<Func<User, bool>> predicate)
+        {
+            return await _context.Set<User>()
+                .Include(user => user.UserProjects)
+                    .ThenInclude(userProject => userProject.Project)
+                .Include(user => user.RoleUsers)
+                    .ThenInclude(userRole => userRole.Role)
+                .Where(predicate).ToListAsync();
         }
     }
 

@@ -48,11 +48,40 @@ namespace Auth_API.Services
 
             return new() { Token = _tokenHandler.Generate(user) };
         }
+
+        public async Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request)
+        {
+            var users = await _userRepository.GetAll(user =>
+                (!request.Id.HasValue || user.Id == request.Id.Value) &&
+                (string.IsNullOrEmpty(request.Name) || user.Name.Contains(request.Name)) &&
+                (string.IsNullOrEmpty(request.Email) || user.Email == request.Email) &&
+                (!request.ProjectId.HasValue || user.UserProjects.Select(userProject => userProject.ProjectId).Contains(request.ProjectId.Value)) &&
+                (!request.RoleId.HasValue || user.RoleUsers.Select(userRole => userRole.RoleId).Contains(request.RoleId.Value)));
+
+            return users.Select(user => new UserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Projects = user.UserProjects.Select(userProject => userProject.Project).Select(project => new ProjectForUserResponse
+                {
+                    Id = project.Id,
+                    Name = project.Name
+                }),
+                Roles = user.RoleUsers.Select(roleUser => roleUser.Role).Select(role => new RoleForUserResponse
+                {
+                    Id = role.Id,
+                    Name = role.Name
+                })
+            });
+        }
     }
 
     public interface IUserService
     {
         Task<GetUserTokenResposne> Create(CreateUserRequest request);
         Task<GetUserTokenResposne> Login(LoginRequest request);
+        Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
+
     }
 }
