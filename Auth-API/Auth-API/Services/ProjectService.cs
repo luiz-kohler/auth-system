@@ -4,6 +4,7 @@ using Auth_API.Entities;
 using Auth_API.Exceptions;
 using Auth_API.Repositories;
 using Auth_API.Validator;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Endpoint = Auth_API.Entities.Endpoint;
 
 namespace Auth_API.Services
@@ -40,7 +41,6 @@ namespace Auth_API.Services
         {
             ValidateRequest(request);
 
-            //TODO: VALIDATE IF PROJECTS NAME ALERADY EXISTS IN DATABASE, BECAUSE IT WILL BE UNIQUE
             var admin = await GetAdminById(request.AdminId);
             var project = await CreateProject(request);
             var endpoints = await CreateProjectEndpoints(request, project);
@@ -72,6 +72,11 @@ namespace Auth_API.Services
 
         private async Task<Project> CreateProject(CreateProjectRequest request)
         {
+            var isThereAnyProjectWithSameName = await _projectRepository.Any(project => project.Name == request.Name);
+
+            if (isThereAnyProjectWithSameName)
+                throw new BadRequestException("There is already a project with same name");
+
             var project = new Project
             {
                 Name = request.Name
