@@ -10,27 +10,49 @@ CREATE USER:
 CREATE PROJECT:
 {
   "name": "auth-api",
-  "managerId": 1002,
+  "managerId": 1004,
   "endpoints": [
-    "/auth-tests/no-auth-needed",
-    "/auth-tests/auth-needed",
-    "/projects",
-    "/users",
-    "/swagger/index.html"
+    {
+      "route": "/auth-tests/no-auth-needed",
+      "HttpMethod": 2,
+      "isPublic": true
+    },
+    {
+      "route": "/auth-tests/auth-needed",
+      "HttpMethod": 2,
+      "isPublic": false
+    },
+    {
+      "route": "/projects",
+      "HttpMethod": 1,
+      "isPublic": false
+    },
+    {
+      "route": "/users",
+      "HttpMethod": 1,
+      "isPublic": false
+    },
+    {
+      "route": "/swagger/index.html",
+      "HttpMethod": 2,
+      "isPublic": true
+    },
+    {
+      "route": "/swagger/index.js",
+      "HttpMethod": 2,
+      "isPublic": true
+    },
+    {
+      "route": "/swagger/v1/swagger.json",
+      "HttpMethod": 2,
+      "isPublic": true
+    }
   ]
 }
 
-TOKEN VALIDO:
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxMDAyIiwibmJmIjoxNzI5OTA2ODg2LCJleHAiOjE4MTYyMjA0ODYsImlhdCI6MTcyOTkwNjg4Nn0.EsuAGSkea0kZMe6Xg46NOJQPLdFS77filFpCbJ-VPaY
 
+TOKEN VALIDO:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxMDA0IiwibmJmIjoxNzI5OTkxNDMxLCJleHAiOjE4MTYzMDUwMzEsImlhdCI6MTcyOTk5MTQzMX0.dLTrFDVEHsYtwTBQLeATIKCWFetlOSpLC1z8RB08eVw
 
 BASIC ENDPOINT:
 http://localhost:5018/auth-api/auth-tests/auth-needed
-
--- 1003
-SELECT * FROM Endpoints WHERE Route = '/auth-tests/auth-needed';
-
--- ROLE: 1002 - ENDPOINT: 1003
-SELECT * FROM RolesEndpoints WHERE EndpointId = 1003;
-DELETE FROM RolesEndpoints WHERE EndpointId = 1003;
-INSERT INTO RolesEndpoints VALUES (1002, 1003);
