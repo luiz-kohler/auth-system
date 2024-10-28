@@ -38,7 +38,6 @@ namespace Auth_API.Services
             return new() { Token = _tokenHandler.Generate(user) };
         }
 
-        //TODO: Validate request before search in repo
         public async Task<GetUserTokenResposne> Login(LoginRequest request)
         {
             var user = await _userRepository.GetSingle(user => user.Email == request.Email && user.Password == request.Password);
@@ -75,6 +74,20 @@ namespace Auth_API.Services
                 })
             });
         }
+
+        public async Task Delete(int userId)
+        {
+            var user = await _userRepository.GetSingle(user => user.Id == userId);
+
+            if(user == null)
+                throw new BadRequestException("User not found");
+
+            if(user.UserProjects.Any() || user.RoleUsers.Any())
+                throw new BadRequestException("You must remove this users from all roles and project");
+
+            await _userRepository.Delete(user);
+            await _userRepository.Commit();
+        }
     }
 
     public interface IUserService
@@ -82,6 +95,6 @@ namespace Auth_API.Services
         Task<GetUserTokenResposne> Create(CreateUserRequest request);
         Task<GetUserTokenResposne> Login(LoginRequest request);
         Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
-
+        Task Delete(int userId);
     }
 }

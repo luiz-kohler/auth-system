@@ -62,6 +62,16 @@ namespace Auth_API.Repositories
                     .ThenInclude(userRole => userRole.Role)
                 .Where(predicate).ToListAsync();
         }
+
+        public override async Task<User> GetSingle(Expression<Func<User, bool>> predicate)
+        {
+            return await _context.Set<User>()
+                .Include(user => user.UserProjects)
+                    .ThenInclude(userProject => userProject.Project)
+                .Include(user => user.RoleUsers)
+                    .ThenInclude(userRole => userRole.Role)
+                .FirstOrDefaultAsync(predicate);
+        }
     }
 
     public class UserProjectRepository : BaseEntityRepository<UserProject>, IUserProjectRepository
