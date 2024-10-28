@@ -10,13 +10,19 @@ namespace Auth_API.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IProjectRepository _projectRepository;
+        private readonly IUserProjectRepository _userProjectRepository;
         private readonly ITokenHandler _tokenHandler;
 
         public UserService(
             IUserRepository userRepository,
+            IProjectRepository projectRepository,
+            IUserProjectRepository userProjectRepository,
             ITokenHandler tokenHandler)
         {
             _userRepository = userRepository;
+            _projectRepository = projectRepository;
+            _userProjectRepository = userProjectRepository;
             _tokenHandler = tokenHandler;
         }
 
@@ -88,6 +94,35 @@ namespace Auth_API.Services
             await _userRepository.Delete(user);
             await _userRepository.Commit();
         }
+
+        public async Task AddToProjects(int userId, List<int> projectIds)
+        {
+            var user = await _userRepository.GetSingle(user => user.Id == userId);
+
+            if (user == null)
+                throw new BadRequestException("User not found");
+
+            projectIds = projectIds.Distinct().ToList();
+
+            var linkedProjectIds = user.UserProjects
+                .Select(userProject => userProject.ProjectId)
+                .Intersect(projectIds)
+                .Distinct()
+                .ToList();
+
+            if (linkedProjectIds.Any())
+                throw new BadRequestException($"User is already linked with the projects: {string.Join(", ", linkedProjectIds)}");
+
+            var projects = await _projectRepository.GetAll(project => projectIds.Contains(project.Id));
+
+            if(projectIds.Count != projects.Count())
+                throw new BadRequestException($"Some informed projects was not found");
+
+            var newUserProjects = projects.Select(project => new UserProject { User = user, Project = project });
+
+            await _userProjectRepository.Add(newUserProjects);
+            await _userProjectRepository.Commit();
+        }
     }
 
     public interface IUserService
@@ -96,5 +131,6 @@ namespace Auth_API.Services
         Task<GetUserTokenResposne> Login(LoginRequest request);
         Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
         Task Delete(int userId);
+        Task AddToProjects(int userId, List<int> projectIds);
     }
 }

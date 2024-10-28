@@ -42,5 +42,12 @@ namespace Auth_API.Controllers
             return Ok();
         }
 
+        [HttpPost("{id}/add-to-projects")]
+        public async Task<IActionResult> AddToProjects([FromRoute] int id, [FromBody] List<int> projectIds)
+        {
+            await _service.AddToProjects(id, projectIds);
+            return Ok();
+        }
+
     }
 }
