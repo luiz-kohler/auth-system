@@ -62,5 +62,12 @@ namespace Auth_API.Controllers
             await _service.AddToRoles(id, roleIds);
             return Ok();
         }
+
+        [HttpDelete("{id}/remove-from-roles")]
+        public async Task<IActionResult> RemoveFromRoles([FromRoute] int id, [FromBody] List<int> roleIds)
+        {
+            await _service.RemoveFromRoles(id, roleIds);
+            return Ok();
+        }
     }
 }

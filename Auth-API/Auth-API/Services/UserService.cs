@@ -156,7 +156,7 @@ namespace Auth_API.Services
                 .ToList();
 
             if (projectsWithSingleAdmin.Any())
-                throw new BadRequestException("User is the only admin on some projects and cannot be removed.");
+                throw new BadRequestException("User is the only admin in some projects and cannot be removed");
 
             var userProjectsIdsToRemove = userProjectsToRemove.Select(userProject =>  userProject.ProjectId).ToList();
 
@@ -169,27 +169,27 @@ namespace Auth_API.Services
             await _userProjectRepository.Commit();
         }
 
-        public async Task AddToRoles(int userId, List<int> rolesIds)
+        public async Task AddToRoles(int userId, List<int> roleIds)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
 
             if (user == null)
                 throw new BadRequestException("User not found");
 
-            rolesIds = rolesIds.Distinct().ToList();
+            roleIds = roleIds.Distinct().ToList();
 
             var linkedRoleIds = user.RoleUsers
                 .Select(roleUser => roleUser.RoleId)
-                .Intersect(rolesIds)
+                .Intersect(roleIds)
                 .Distinct()
                 .ToList();
 
             if (linkedRoleIds.Any())
                 throw new BadRequestException($"User is already linked with the roles: {string.Join(", ", linkedRoleIds)}");
 
-            var roles = await _roleRepository.GetAll(role => rolesIds.Contains(role.Id));
+            var roles = await _roleRepository.GetAll(role => roleIds.Contains(role.Id));
 
-            if (rolesIds.Count != roles.Count())
+            if (roleIds.Count != roles.Count())
                 throw new BadRequestException($"Some informed roles was not found");
 
             var projectIdsUserIsLinked = user.UserProjects.Select(userProject => userProject.ProjectId).ToHashSet();
@@ -207,6 +207,41 @@ namespace Auth_API.Services
             await _roleUserRepository.Add(newUserProjects);
             await _roleUserRepository.Commit();
         }
+
+        public async Task RemoveFromRoles(int userId, List<int> roleIds)
+        {
+            var user = await _userRepository.GetSingle(user => user.Id == userId);
+
+            if (user == null)
+                throw new BadRequestException("User not found");
+
+            var distinctRoleIds = roleIds.Distinct().ToList();
+
+            var userRoleIds = user.RoleUsers.Select(up => up.RoleId).ToHashSet();
+            if (distinctRoleIds.Any(id => !userRoleIds.Contains(id)))
+                throw new BadRequestException("User is not linked in all informed roles");
+
+            var userRolesToRemove = user.RoleUsers
+                .Where(up => distinctRoleIds.Contains(up.RoleId))
+                .ToList();
+
+            var rolesWithSingleAdmin = userRolesToRemove
+                .Where(ru => ru.Role.Name == EDefaultRole.Admin.GetDescription() &&
+                             ru.Role.RoleUsers.Count == 1 &&
+                             ru.Role.RoleUsers.Any(roleUser => roleUser.UserId == userId))
+                .ToList();
+
+            if (rolesWithSingleAdmin.Any())
+                throw new BadRequestException("User is the only admin in some projects and cannot be removed");
+
+            var userRolesIdsToRemove = userRolesToRemove.Select(userRole => userRole.RoleId).ToList();
+
+            await _roleUserRepository
+                .DeleteWhere(userRole => userRole.UserId == userId
+                                         && userRolesIdsToRemove.Contains(userRole.RoleId));
+
+            await _roleUserRepository.Commit();
+        }
     }
 
     public interface IUserService
@@ -217,6 +252,7 @@ namespace Auth_API.Services
         Task Delete(int userId);
         Task AddToProjects(int userId, List<int> projectIds);
         Task RemoveFromProjects(int userId, List<int> projectIds);
-        Task AddToRoles(int userId, List<int> rolesIds);
+        Task AddToRoles(int userId, List<int> roleIds);
+        Task RemoveFromRoles(int userId, List<int> roleIds);
     }
 }
