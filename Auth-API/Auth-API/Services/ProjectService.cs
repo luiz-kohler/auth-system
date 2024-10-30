@@ -4,7 +4,7 @@ using Auth_API.Entities;
 using Auth_API.Exceptions;
 using Auth_API.Repositories;
 using Auth_API.Validator;
-using Microsoft.AspNetCore.Http.HttpResults;
+using System.Data;
 using Endpoint = Auth_API.Entities.Endpoint;
 
 namespace Auth_API.Services
@@ -187,6 +187,49 @@ namespace Auth_API.Services
                 })
             };
         }
+
+        public async Task Delete(int id)
+        {
+            var project = await _projectRepository.GetSingle(project => project.Id == id);
+
+            if (project == null)
+                throw new BadRequestException("Project not found");
+
+            await RemoveEndpoints(project);
+            await RemoveRolesFromProject(project);
+            await RemoveUsersFromProject(project);
+
+            await _projectRepository.Delete(project);
+        }
+
+        private async Task RemoveEndpoints(Project project)
+        {
+            var rolesEndpoints = project.Endpoints.SelectMany(endpoint => endpoint.RoleEndpoints);
+            if (rolesEndpoints.Any())
+                await _roleEndpointRepository.Delete(rolesEndpoints);
+
+            var endpoints = project.Endpoints;
+            if (endpoints.Any())
+                await _endpointRepository.Delete(endpoints);
+        }
+
+        private async Task RemoveUsersFromProject(Project project)
+        {
+            var userProjects = project.UserProjects;
+            if (userProjects.Any())
+                await _userProjectRepository.Delete(userProjects);
+        }
+
+        private async Task RemoveRolesFromProject(Project project)
+        {
+            var roleUsers = project.Roles?.SelectMany(role => role?.RoleUsers);
+            if(roleUsers.Any())
+                await _roleUserRepository.Delete(roleUsers);
+
+            var roles = project.Roles;
+            if (roles.Any())
+                await _roleRepository.Delete(roles);
+        }
     }
 
     public interface IProjectService
@@ -194,5 +237,6 @@ namespace Auth_API.Services
         Task Create(CreateProjectRequest request);
         Task<IEnumerable<ProjectToGetManyResponse>> GetMany();
         Task<GetProjectByIdResponse> Get(int id);
+        Task Delete(int id);
     }
 }

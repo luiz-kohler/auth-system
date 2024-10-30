@@ -34,5 +34,12 @@ namespace Auth_API.Controllers
             var response = await _service.Get(id);
             return Ok(response);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            await _service.Delete(id);
+            return Ok();
+        }
     }
 }

@@ -2,9 +2,7 @@
 using Auth_API.Entities;
 using Auth_API.Infra;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System.Linq.Expressions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Endpoint = Auth_API.Entities.Endpoint;
 
 namespace Auth_API.Repositories
@@ -22,7 +20,9 @@ namespace Auth_API.Repositories
         {
             return await _context.Set<Project>()
                 .Include(project => project.Roles)
+                    .ThenInclude(role => role.RoleUsers)
                 .Include(project => project.Endpoints)
+                    .ThenInclude(endpoint => endpoint.RoleEndpoints)
                 .Include(project => project.UserProjects)
                     .ThenInclude(userProjects => userProjects.User)
                 .FirstOrDefaultAsync(predicate);
