@@ -21,6 +21,11 @@ namespace Auth_API.Controllers
             return Ok();
         }
 
-        //TODO: Create Patch for projects
+        [HttpGet]
+        public async Task<IActionResult> GetMany()
+        {
+            var response = await _service.GetMany();
+            return Ok(response);
+        }
     }
 }

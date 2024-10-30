@@ -15,4 +15,10 @@ namespace Auth_API.DTOs
         public EHttpMethod HttpMethod { get; set; }
         public bool IsPublic { get; set; }
     }
+
+    public class ProjectToGetManyResponse
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
 }

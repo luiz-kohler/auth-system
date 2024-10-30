@@ -144,10 +144,22 @@ namespace Auth_API.Services
 
             await _roleEndpointRepository.Add(roleEndpoints);
         }
+
+        public async Task<IEnumerable<ProjectToGetManyResponse>> GetMany()
+        {
+            var projects = await _projectRepository.GetAll();
+
+            return projects.Select(project => new ProjectToGetManyResponse
+            {
+                Id = project.Id,
+                Name = project.Name
+            });
+        }
     }
 
     public interface IProjectService
     {
         Task Create(CreateProjectRequest request);
+        Task<IEnumerable<ProjectToGetManyResponse>> GetMany();
     }
 }
