@@ -164,6 +164,8 @@ namespace Auth_API.Services
                 .DeleteWhere(userProject => userProject.UserId == userId 
                                          && userProjectsIdsToRemove.Contains(userProject.ProjectId));
 
+            await _roleUserRepository.DeleteWhere(roleUser => roleUser.UserId == userId && distinctProjectIds.Contains(roleUser.Role.ProjectId));
+
             await _userProjectRepository.Commit();
         }
 
