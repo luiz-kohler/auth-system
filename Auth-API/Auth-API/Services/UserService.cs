@@ -13,17 +13,23 @@ namespace Auth_API.Services
         private readonly IUserRepository _userRepository;
         private readonly IProjectRepository _projectRepository;
         private readonly IUserProjectRepository _userProjectRepository;
+        private readonly IRoleRepository _roleRepository;
+        private readonly IRoleUserRepository _roleUserRepository;
         private readonly ITokenHandler _tokenHandler;
 
         public UserService(
             IUserRepository userRepository,
             IProjectRepository projectRepository,
             IUserProjectRepository userProjectRepository,
+            IRoleRepository roleRepository,
+            IRoleUserRepository roleUserRepository,
             ITokenHandler tokenHandler)
         {
             _userRepository = userRepository;
             _projectRepository = projectRepository;
             _userProjectRepository = userProjectRepository;
+            _roleRepository = roleRepository;
+            _roleUserRepository = roleUserRepository;
             _tokenHandler = tokenHandler;
         }
 
@@ -160,6 +166,45 @@ namespace Auth_API.Services
 
             await _userProjectRepository.Commit();
         }
+
+        public async Task AddToRoles(int userId, List<int> rolesIds)
+        {
+            var user = await _userRepository.GetSingle(user => user.Id == userId);
+
+            if (user == null)
+                throw new BadRequestException("User not found");
+
+            rolesIds = rolesIds.Distinct().ToList();
+
+            var linkedRoleIds = user.RoleUsers
+                .Select(roleUser => roleUser.RoleId)
+                .Intersect(rolesIds)
+                .Distinct()
+                .ToList();
+
+            if (linkedRoleIds.Any())
+                throw new BadRequestException($"User is already linked with the roles: {string.Join(", ", linkedRoleIds)}");
+
+            var roles = await _roleRepository.GetAll(role => rolesIds.Contains(role.Id));
+
+            if (rolesIds.Count != roles.Count())
+                throw new BadRequestException($"Some informed roles was not found");
+
+            var projectIdsUserIsLinked = user.UserProjects.Select(userProject => userProject.ProjectId).ToHashSet();
+            var projectIdsOfEachRole = roles.Select(role => role.ProjectId).Distinct();
+
+            var projectIdsUserNotLinked = projectIdsOfEachRole
+                .Where(projectId => !projectIdsUserIsLinked.Contains(projectId))
+                .ToList();
+
+            if (projectIdsUserNotLinked.Any())
+                throw new BadRequestException($"User must be linked in the projects: {string.Join(", ", projectIdsUserNotLinked)}");
+
+            var newUserProjects = roles.Select(role => new RoleUser { User = user, Role = role });
+
+            await _roleUserRepository.Add(newUserProjects);
+            await _roleUserRepository.Commit();
+        }
     }
 
     public interface IUserService
@@ -170,5 +215,6 @@ namespace Auth_API.Services
         Task Delete(int userId);
         Task AddToProjects(int userId, List<int> projectIds);
         Task RemoveFromProjects(int userId, List<int> projectIds);
+        Task AddToRoles(int userId, List<int> rolesIds);
     }
 }

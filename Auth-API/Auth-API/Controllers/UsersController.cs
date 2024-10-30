@@ -55,5 +55,12 @@ namespace Auth_API.Controllers
             await _service.RemoveFromProjects(id, projectIds);
             return Ok();
         }
+
+        [HttpPost("{id}/add-to-roles")]
+        public async Task<IActionResult> AddToRoles([FromRoute] int id, [FromBody] List<int> roleIds)
+        {
+            await _service.AddToRoles(id, roleIds);
+            return Ok();
+        }
     }
 }
