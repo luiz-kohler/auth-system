@@ -49,5 +49,11 @@ namespace Auth_API.Controllers
             return Ok();
         }
 
+        [HttpDelete("{id}/remove-from-projects")]
+        public async Task<IActionResult> RemoveFromProjects([FromRoute] int id, [FromBody] List<int> projectIds)
+        {
+            await _service.RemoveFromProjects(id, projectIds);
+            return Ok();
+        }
     }
 }

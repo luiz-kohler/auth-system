@@ -4,6 +4,7 @@ using Auth_API.Entities;
 using Auth_API.Exceptions;
 using Auth_API.Repositories;
 using Auth_API.Validator;
+using System.Linq;
 
 namespace Auth_API.Services
 {
@@ -123,6 +124,42 @@ namespace Auth_API.Services
             await _userProjectRepository.Add(newUserProjects);
             await _userProjectRepository.Commit();
         }
+
+        public async Task RemoveFromProjects(int userId, List<int> projectIds)
+        {
+            var user = await _userRepository.GetSingle(user => user.Id == userId);
+
+            if (user == null)
+                throw new BadRequestException("User not found");
+
+            var distinctProjectIds = projectIds.Distinct().ToList();
+
+            var userProjectIds = user.UserProjects.Select(up => up.ProjectId).ToHashSet();
+            if (distinctProjectIds.Any(id => !userProjectIds.Contains(id)))
+                throw new BadRequestException("User is not linked in all informed projects");
+
+            var userProjectsToRemove = user.UserProjects
+                .Where(up => distinctProjectIds.Contains(up.ProjectId))
+                .ToList();
+
+            var projectsWithSingleAdmin = userProjectsToRemove
+                .Where(up => up.Project.Roles
+                    .Any(role => role.Name == EDefaultRole.Admin.GetDescription() &&
+                                 role.RoleUsers.Count == 1 &&
+                                 role.RoleUsers.Any(roleUser => roleUser.UserId == userId)))
+                .ToList();
+
+            if (projectsWithSingleAdmin.Any())
+                throw new BadRequestException("User is the only admin on some projects and cannot be removed.");
+
+            var userProjectsIdsToRemove = userProjectsToRemove.Select(userProject =>  userProject.ProjectId).ToList();
+
+            await _userProjectRepository
+                .DeleteWhere(userProject => userProject.UserId == userId 
+                                         && userProjectsIdsToRemove.Contains(userProject.ProjectId));
+
+            await _userProjectRepository.Commit();
+        }
     }
 
     public interface IUserService
@@ -132,5 +169,6 @@ namespace Auth_API.Services
         Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
         Task Delete(int userId);
         Task AddToProjects(int userId, List<int> projectIds);
+        Task RemoveFromProjects(int userId, List<int> projectIds);
     }
 }
