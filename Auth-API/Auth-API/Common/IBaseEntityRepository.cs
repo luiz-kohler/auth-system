@@ -15,6 +15,7 @@ namespace Auth_API.Common
         Task Add(IEnumerable<T> entities);
         Task Update(T entity);
         Task Delete(T entity);
+        Task Delete(IEnumerable<T> entities);
         Task DeleteWhere(Expression<Func<T, bool>> predicate);
         Task Commit();
     }

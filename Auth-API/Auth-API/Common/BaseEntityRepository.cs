@@ -50,6 +50,12 @@ namespace Auth_API.Common
             await Commit();
         }
 
+        public async Task Delete(IEnumerable<T> entities)
+        {
+            _context.Set<T>().RemoveRange(entities);
+            await Commit();
+        }
+
         public virtual async Task DeleteWhere(Expression<Func<T, bool>> predicate)
         {
             var entities = _context.Set<T>().Where(predicate);
