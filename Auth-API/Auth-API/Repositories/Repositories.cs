@@ -17,6 +17,16 @@ namespace Auth_API.Repositories
     public class ProjectRepository : BaseEntityRepository<Project>, IProjectRepository
     {
         public ProjectRepository(Context context) : base(context) { }
+
+        public override async Task<Project> GetSingle(Expression<Func<Project, bool>> predicate)
+        {
+            return await _context.Set<Project>()
+                .Include(project => project.Roles)
+                .Include(project => project.Endpoints)
+                .Include(project => project.UserProjects)
+                    .ThenInclude(userProjects => userProjects.User)
+                .FirstOrDefaultAsync(predicate);
+        }
     }
 
     public class RoleRepository : BaseEntityRepository<Role>, IRoleRepository

@@ -155,11 +155,44 @@ namespace Auth_API.Services
                 Name = project.Name
             });
         }
+
+        public async Task<GetProjectByIdResponse> Get(int id)
+        {
+            var project = await _projectRepository.GetSingle(project => project.Id == id);
+
+            if (project == null)
+                throw new BadRequestException("Project not found");
+
+            return new()
+            {
+                Id = project.Id,
+                Name = project.Name,
+                Users = project.UserProjects.Select(userProject => userProject.User).Select(user => new UserToGetProjectByIdResponse
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name
+                }),
+                Roles = project.Roles.Select(role => new RoleToGetProjectByIdResponse
+                {
+                    Id = role.Id,
+                    Name = role.Name
+                }),
+                Endpoints = project.Endpoints.Select(endpoint => new EndpointToGetProjectByIdResponse
+                {
+                    Id = endpoint.Id,
+                    HttpMethod = endpoint.HttpMethod,
+                    IsPublic = endpoint.IsPublic,
+                    Route = endpoint.Route
+                })
+            };
+        }
     }
 
     public interface IProjectService
     {
         Task Create(CreateProjectRequest request);
         Task<IEnumerable<ProjectToGetManyResponse>> GetMany();
+        Task<GetProjectByIdResponse> Get(int id);
     }
 }

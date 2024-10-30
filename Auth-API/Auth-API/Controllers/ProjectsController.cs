@@ -27,5 +27,12 @@ namespace Auth_API.Controllers
             var response = await _service.GetMany();
             return Ok(response);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get([FromRoute] int id)
+        {
+            var response = await _service.Get(id);
+            return Ok(response);
+        }
     }
 }
