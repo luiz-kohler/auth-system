@@ -2,6 +2,7 @@
 using Auth_API.Entities;
 using Auth_API.Infra;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Linq.Expressions;
 using Endpoint = Auth_API.Entities.Endpoint;
 
@@ -10,6 +11,15 @@ namespace Auth_API.Repositories
     public class EndpointRepository : BaseEntityRepository<Endpoint>, IEndpointRepository
     {
         public EndpointRepository(Context context) : base(context) { }
+
+        public override async Task<IEnumerable<Endpoint>> GetAll(Expression<Func<Endpoint, bool>> predicate)
+        {
+            return await _context.Set<Endpoint>()
+                .Include(user => user.RoleEndpoints)
+                    .ThenInclude(roleEndpoint => roleEndpoint.Role)
+                .Include(user => user.Project)
+                .Where(predicate).ToListAsync();
+        }
     }
 
     public class ProjectRepository : BaseEntityRepository<Project>, IProjectRepository

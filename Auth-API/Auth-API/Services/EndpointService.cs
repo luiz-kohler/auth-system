@@ -123,11 +123,37 @@ namespace Auth_API.Services
             await _roleEndpointRepository.Delete(roleEndpoints);
             await _endpointRepository.Delete(endpoints);
         }
+
+        public async Task<IEnumerable<EndpointResponse>> GetMany(GetManyEndpointRequest request)
+        {
+            var endpoints = await _endpointRepository.GetAll(endpoint =>
+                 (!request.Id.HasValue || endpoint.Id == request.Id.Value) &&
+                 (string.IsNullOrEmpty(request.Route) || endpoint.Route == request.Route) &&
+                 (!request.IsPublic.HasValue || endpoint.IsPublic == request.IsPublic.Value) &&
+                 (!request.HttpMethod.HasValue || endpoint.HttpMethod == request.HttpMethod.Value) &&
+                 (!request.ProjectId.HasValue || endpoint.ProjectId == request.ProjectId.Value) &&
+                 (!request.RoleId.HasValue || endpoint.RoleEndpoints.Any(roleEndpoint => roleEndpoint.RoleId == request.RoleId.Value)));
+
+            return endpoints.Select(endpoint => new EndpointResponse
+            {
+                Id = endpoint.Id,
+                Route = endpoint.Route,
+                HttpMethod = endpoint.HttpMethod,
+                IsPublic = endpoint.IsPublic,
+                Project = new ProjectToEndpointResponse { Id = endpoint.ProjectId, Name = endpoint.Project.Name },
+                Roles = endpoint.RoleEndpoints.Select(roleEndpoint => roleEndpoint.Role).Select(role => new RoleToEndpointResponse
+                {
+                    Id = role.Id,
+                    Name = role.Name,
+                })
+            });
+        }
     }
 
     public interface IEndpointService
     {
         Task Create(List<CreateEndpointRequest> request, int projectId);
         Task Delete(List<int> ids);
+        Task<IEnumerable<EndpointResponse>> GetMany(GetManyEndpointRequest request);
     }
 }

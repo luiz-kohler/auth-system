@@ -27,5 +27,13 @@ namespace Auth_API.Controllers
             await _service.Delete(ids);
             return Ok();
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetMany([FromQuery] GetManyEndpointRequest request)
+        {
+            var repsonse = await _service.GetMany(request);
+            return Ok(repsonse);
+        }
     }
 }
