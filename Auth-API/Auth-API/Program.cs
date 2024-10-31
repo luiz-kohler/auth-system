@@ -28,6 +28,7 @@ builder.Services.AddScoped<IUserProjectRepository, UserProjectRepository>();
 // services 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IEndpointService, EndpointService>();
 
 // handlers
 builder.Services.AddScoped<ITokenHandler, Auth_API.Common.TokenHandler>();
