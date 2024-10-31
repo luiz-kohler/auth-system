@@ -18,8 +18,9 @@ namespace Auth_API.Common
                 ValidationException exception => (HttpStatusCode.BadRequest, MontarMensagemErro(exception)),
                 NotFoundException exception => (HttpStatusCode.BadRequest, exception.Message),
                 BadRequestException exception => (HttpStatusCode.BadRequest, exception.Message),
-                InvalidOperationException exception => (HttpStatusCode.Unauthorized, "you do not have access for this action"),
                 UnauthorizedAccessException exception => (HttpStatusCode.Unauthorized, exception.Message),
+                // TODO: REMOVE IN THE FUTURE
+                Exception exception => (HttpStatusCode.InternalServerError, exception.Message + " " + exception.InnerException),
                 _ => (HttpStatusCode.InternalServerError, "unexpected error")
             };
 
