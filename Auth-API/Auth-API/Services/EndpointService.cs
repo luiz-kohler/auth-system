@@ -97,7 +97,7 @@ namespace Auth_API.Services
         {
             var adminRole = project.Roles.FirstOrDefault(role => role.Name == EDefaultRole.Admin.GetDescription());
             if (adminRole == null)
-                throw new InvalidOperationException("Admin role not found in project");
+                throw new BadRequestException("Admin role not found in project");
 
             return newEndpoints.Select(endpoint => new RoleEndpoint
             {
@@ -105,10 +105,29 @@ namespace Auth_API.Services
                 Endpoint = endpoint 
             });
         }
+
+        public async Task Delete(List<int> ids)
+        {
+            if(ids.Count != ids.Distinct().Count())
+                throw new BadRequestException("You can not inform repeated endpoints");
+
+            var endpoints = await _endpointRepository.GetAll(endpoint => ids.Contains(endpoint.Id));
+
+            if(ids.Count != endpoints.Count())
+                throw new BadRequestException("Some endpoits was not found");
+
+            var endpointIds = endpoints.Select(endpoint => endpoint.Id);
+
+            var roleEndpoints = await _roleEndpointRepository.GetAll(roleEndpoint => endpointIds.Contains(roleEndpoint.EndpointId));
+
+            await _roleEndpointRepository.Delete(roleEndpoints);
+            await _endpointRepository.Delete(endpoints);
+        }
     }
 
     public interface IEndpointService
     {
         Task Create(List<CreateEndpointRequest> request, int projectId);
+        Task Delete(List<int> ids);
     }
 }
