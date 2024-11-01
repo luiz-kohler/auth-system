@@ -118,7 +118,7 @@ namespace Auth_API.Services
                 throw new BadRequestException("Some endpoints were not found");
 
             if (endpoints.Select(endpoint => endpoint.ProjectId).Distinct().Count() > 1)
-                throw new BadRequestException("You can not delete endpoints from differents projects in the same operation");
+                throw new BadRequestException("You can not delete endpoints from different projects in the same operation");
 
             var endpointIds = endpoints.Select(endpoint => endpoint.Id);
 
