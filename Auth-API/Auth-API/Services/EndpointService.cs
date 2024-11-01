@@ -114,7 +114,7 @@ namespace Auth_API.Services
             var endpoints = await _endpointRepository.GetAll(endpoint => ids.Contains(endpoint.Id));
 
             if(ids.Count != endpoints.Count())
-                throw new BadRequestException("Some endpoits was not found");
+                throw new BadRequestException("Some endpoints were not found");
 
             var endpointIds = endpoints.Select(endpoint => endpoint.Id);
 
