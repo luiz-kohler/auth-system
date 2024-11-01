@@ -5,6 +5,7 @@ using Auth_API.Exceptions;
 using Auth_API.Repositories;
 using Auth_API.Validator;
 using Azure.Core;
+using System.Data;
 using Endpoint = Auth_API.Entities.Endpoint;
 
 namespace Auth_API.Services
@@ -115,6 +116,9 @@ namespace Auth_API.Services
 
             if(ids.Count != endpoints.Count())
                 throw new BadRequestException("Some endpoints were not found");
+
+            if (endpoints.Select(endpoint => endpoint.ProjectId).Distinct().Count() > 1)
+                throw new BadRequestException("You can not delete endpoints from differents projects in the same operation");
 
             var endpointIds = endpoints.Select(endpoint => endpoint.Id);
 
