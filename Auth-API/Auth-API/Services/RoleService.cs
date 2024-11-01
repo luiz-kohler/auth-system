@@ -66,7 +66,7 @@ namespace Auth_API.Services
             if (roles.Any(role => role.Name == EDefaultRole.Admin.GetDescription()))
                 throw new BadRequestException("You can not delete a admin role");
 
-            if (roles.Select(role => role.Project).Distinct().Count() > 1)
+            if (roles.Select(role => role.ProjectId).Distinct().Count() > 1)
                 throw new BadRequestException("You can not delete roles from differents projects in the same operation");
 
             var roleUsers = roles.SelectMany(role => role.RoleUsers);
