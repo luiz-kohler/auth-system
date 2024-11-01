@@ -57,7 +57,9 @@ namespace Auth_API.Repositories
         {
             return await _context.Set<Role>()
                          .Include(role => role.RoleEndpoints)
+                            .ThenInclude(re => re.Endpoint)
                          .Include(role => role.RoleUsers)
+                            .ThenInclude(ru => ru.User)
                          .Include(role => role.Project)
                          .FirstOrDefaultAsync(predicate);
         }

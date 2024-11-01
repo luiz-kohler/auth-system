@@ -42,5 +42,19 @@ namespace Auth_API.Controllers
             await _service.RemoveEndpoints(id, endpointIds);
             return Ok();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMany([FromQuery] GetManyRolesRequest request)
+        {
+            var response = await _service.GetMany(request);
+            return Ok(response);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetMany([FromRoute] int id)
+        {
+            var response = await _service.Get(id);
+            return Ok(response);
+        }
     }
 }

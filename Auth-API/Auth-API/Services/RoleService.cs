@@ -3,6 +3,7 @@ using Auth_API.Entities;
 using Auth_API.Exceptions;
 using Auth_API.Repositories;
 using Auth_API.Validator;
+using Azure.Core;
 using System.Data;
 using System.Linq;
 using System.Net;
@@ -143,6 +144,59 @@ namespace Auth_API.Services
 
             await _roleEndpointRepository.Delete(roleEndpoints);
         }
+
+        public async Task<IEnumerable<RoleResponse>> GetMany(GetManyRolesRequest request)
+        {
+            var roles = await _roleRepository.GetAll(role =>
+                (!request.Id.HasValue || role.Id == request.Id.Value) &&
+                (string.IsNullOrEmpty(request.Name) || role.Name.Contains(request.Name)) &&
+                (!request.ProjectId.HasValue || role.Project.Id == request.ProjectId.Value) &&
+                (!request.EndpointId.HasValue || role.RoleEndpoints.Select(roleEndpoints => roleEndpoints.EndpointId).Contains(request.EndpointId.Value)) &&
+                (!request.UserId.HasValue || role.RoleUsers.Select(roleUsers => roleUsers.UserId).Contains(request.UserId.Value)));
+
+            return roles.Select(role => new RoleResponse
+            {
+                Id = role.Id,
+                Name = role.Name,
+                Project = new ProjectForRoleResponse
+                {
+                    Id = role.Project.Id,
+                    Name = role.Project.Name
+                }
+            });
+        }
+
+        public async Task<RoleWithRelationsResponse> Get(int id)
+        {
+            var role = await _roleRepository.GetSingle(role => role.Id == id);
+
+            if (role == null)
+                throw new BadRequestException("Role not found");
+
+            return new RoleWithRelationsResponse
+            {
+                Id = role.Id,
+                Name = role.Name,
+                Project = new ProjectForRoleResponse
+                {
+                    Id = role.Project.Id,
+                    Name = role.Project.Name
+                },
+                Endpoints = role.RoleEndpoints.Select(re => re.Endpoint).Select(endpoint => new EndpointForRoleResponse
+                {
+                    Id = endpoint.Id,
+                    Route = endpoint.Route,
+                    HttpMethod = endpoint.HttpMethod,
+                    IsPublic = endpoint.IsPublic
+                }) ?? new List<EndpointForRoleResponse>(),
+                Users = role.RoleUsers.Select(ru => ru.User).Select(user => new UserForRoleResponse
+                {
+                    Id= user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                })
+            };
+        }
     }
 
     public interface IRoleService
@@ -151,5 +205,7 @@ namespace Auth_API.Services
         Task Delete(List<int> ids);
         Task AddEndpoints(int id, List<int> endpointIds);
         Task RemoveEndpoints(int id, List<int> endpointIds);
+        Task<IEnumerable<RoleResponse>> GetMany(GetManyRolesRequest request);
+        Task<RoleWithRelationsResponse> Get(int id);
     }
 }
