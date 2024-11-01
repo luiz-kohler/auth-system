@@ -28,5 +28,12 @@ namespace Auth_API.Controllers
             await _service.Delete(ids);
             return Ok();
         }
+
+        [HttpPost("{id}/endpoints")]
+        public async Task<IActionResult> Delete([FromRoute] int id, [FromBody] List<int> endpointIds)
+        {
+            await _service.AddEndpoints(id, endpointIds);
+            return Ok();
+        }
     }
 }

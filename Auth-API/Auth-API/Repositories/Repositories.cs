@@ -48,8 +48,18 @@ namespace Auth_API.Repositories
             return await _context.Set<Role>()
                          .Include(role => role.RoleEndpoints)
                          .Include(role => role.RoleUsers)
+                         .Include(role => role.Project)
                          .Where(predicate)
                          .ToListAsync();
+        }
+
+        public override async Task<Role> GetSingle(Expression<Func<Role, bool>> predicate)
+        {
+            return await _context.Set<Role>()
+                         .Include(role => role.RoleEndpoints)
+                         .Include(role => role.RoleUsers)
+                         .Include(role => role.Project)
+                         .FirstOrDefaultAsync(predicate);
         }
     }
 

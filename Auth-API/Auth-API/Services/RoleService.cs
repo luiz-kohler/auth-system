@@ -3,6 +3,8 @@ using Auth_API.Entities;
 using Auth_API.Exceptions;
 using Auth_API.Repositories;
 using Auth_API.Validator;
+using System.Data;
+using System.Net;
 
 namespace Auth_API.Services
 {
@@ -12,18 +14,22 @@ namespace Auth_API.Services
         private readonly IRoleRepository _roleRepository;
         private readonly IRoleUserRepository _roleUserRepository;
         private readonly IRoleEndpointRepository _roleEndpointRepository;
+        private readonly IEndpointRepository _endpointRepository;
 
         public RoleService(
             IProjectRepository projectRepository,
             IRoleRepository roleRepository,
             IRoleUserRepository roleUserRepository,
-            IRoleEndpointRepository roleEndpointRepository)
+            IRoleEndpointRepository roleEndpointRepository,
+            IEndpointRepository endpointRepository)
         {
             _projectRepository = projectRepository;
             _roleRepository = roleRepository;
             _roleUserRepository = roleUserRepository;
             _roleEndpointRepository = roleEndpointRepository;
+            _endpointRepository = endpointRepository;
         }
+
         public async Task Create(CreateRoleRequest request)
         {
             if (string.IsNullOrWhiteSpace(request?.Name))
@@ -68,11 +74,47 @@ namespace Auth_API.Services
 
             await _roleRepository.Delete(roles);
         }
+
+        public async Task AddEndpoints(int id, List<int> endpointIds)
+        {
+            if(endpointIds.Count == 0)
+                throw new BadRequestException("You must inform any endpoint");
+
+            if (endpointIds.Count != endpointIds.Distinct().Count())
+                throw new BadRequestException("You can not inform repeated endpoints");
+
+            var endpoints = await _endpointRepository.GetAll(endpoint => endpointIds.Contains(endpoint.Id));
+
+            if (endpoints.Count() != endpointIds.Count)
+                throw new BadRequestException("Some endpoints were not found");
+
+            var role = await _roleRepository.GetSingle(role => role.Id == id);
+
+            if(role == null)
+                throw new BadRequestException("Roles was not found");
+
+            if (endpoints.Any(endpoint => endpoint.ProjectId != role.ProjectId))
+                throw new BadRequestException($"All endpoint must be from the project: {role.Project.Name}");
+
+            if (role.RoleEndpoints?.Count > 0 && 
+                role.RoleEndpoints.Any(roleEndpoint => endpointIds.Contains(roleEndpoint.EndpointId) && roleEndpoint.RoleId == role.Id))
+                throw new BadRequestException("Some endpoint is already linked to this role");
+
+            var roleEndpoints = endpoints.Select(endpoint => new RoleEndpoint
+            {
+                EndpointId = endpoint.Id,
+                RoleId = role.Id,
+            });
+
+            await _roleEndpointRepository.Add(roleEndpoints);
+            await _roleRepository.Commit();
+        }
     }
 
     public interface IRoleService
     {
         Task Create(CreateRoleRequest request);
         Task Delete(List<int> ids);
+        Task AddEndpoints(int id, List<int> endpointIds);
     }
 }
