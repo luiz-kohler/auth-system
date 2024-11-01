@@ -63,8 +63,11 @@ namespace Auth_API.Services
             if (ids.Count != roles.Count())
                 throw new BadRequestException("Some roles were not found");
 
-            if(roles.Any(role => role.Name == EDefaultRole.Admin.GetDescription()))
-                throw new BadRequestException("You can not delete a admin role.");
+            if (roles.Any(role => role.Name == EDefaultRole.Admin.GetDescription()))
+                throw new BadRequestException("You can not delete a admin role");
+
+            if (roles.Select(role => role.Project).Distinct().Count() > 1)
+                throw new BadRequestException("You can not delete roles from differents projects in the same operation");
 
             var roleUsers = roles.SelectMany(role => role.RoleUsers);
             await _roleUserRepository.Delete(roleUsers);
