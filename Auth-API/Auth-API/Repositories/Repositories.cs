@@ -42,6 +42,15 @@ namespace Auth_API.Repositories
     public class RoleRepository : BaseEntityRepository<Role>, IRoleRepository
     {
         public RoleRepository(Context context) : base(context) { }
+
+        public override async Task<IEnumerable<Role>> GetAll(Expression<Func<Role, bool>> predicate)
+        {
+            return await _context.Set<Role>()
+                         .Include(role => role.RoleEndpoints)
+                         .Include(role => role.RoleUsers)
+                         .Where(predicate)
+                         .ToListAsync();
+        }
     }
 
     public class RoleEndpointRepository : BaseEntityRepository<RoleEndpoint>, IRoleEndpointRepository

@@ -21,5 +21,12 @@ namespace Auth_API.Controllers
             await _service.Create(request);
             return Ok();
         }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete([FromBody] List<int> ids)
+        {
+            await _service.Delete(ids);
+            return Ok();
+        }
     }
 }
