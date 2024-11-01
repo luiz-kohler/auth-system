@@ -30,9 +30,16 @@ namespace Auth_API.Controllers
         }
 
         [HttpPost("{id}/endpoints")]
-        public async Task<IActionResult> Delete([FromRoute] int id, [FromBody] List<int> endpointIds)
+        public async Task<IActionResult> LinkEndpoints([FromRoute] int id, [FromBody] List<int> endpointIds)
         {
             await _service.AddEndpoints(id, endpointIds);
+            return Ok();
+        }
+
+        [HttpDelete("{id}/endpoints")]
+        public async Task<IActionResult> UnlinkEndpoints([FromRoute] int id, [FromBody] List<int> endpointIds)
+        {
+            await _service.RemoveEndpoints(id, endpointIds);
             return Ok();
         }
     }

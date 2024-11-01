@@ -4,6 +4,7 @@ using Auth_API.Exceptions;
 using Auth_API.Repositories;
 using Auth_API.Validator;
 using System.Data;
+using System.Linq;
 using System.Net;
 
 namespace Auth_API.Services
@@ -112,6 +113,36 @@ namespace Auth_API.Services
             await _roleEndpointRepository.Add(roleEndpoints);
             await _roleRepository.Commit();
         }
+
+        public async Task RemoveEndpoints(int id, List<int> endpointIds)
+        {
+            if (endpointIds.Count == 0)
+                throw new BadRequestException("You must inform any endpoint");
+
+            if (endpointIds.Count != endpointIds.Distinct().Count())
+                throw new BadRequestException("You can not inform repeated endpoints");
+
+            var endpoints = await _endpointRepository.GetAll(endpoint => endpointIds.Contains(endpoint.Id));
+
+            if (endpoints.Count() != endpointIds.Count)
+                throw new BadRequestException("Some endpoints were not found");
+
+            var role = await _roleRepository.GetSingle(role => role.Id == id);
+
+            if (role == null)
+                throw new BadRequestException("Roles was not found");
+
+            if(role.Name == EDefaultRole.Admin.GetDescription())
+                throw new BadRequestException("You can not update the admin role");
+
+            var roleEndpoints = role.RoleEndpoints.Where(roleEndpoint => endpointIds.Contains(roleEndpoint.EndpointId));
+            var endpointFromRoleIds = roleEndpoints.Select(roleEndpoint => roleEndpoint.EndpointId);
+
+            if (endpointIds.Any(projectId => !endpointFromRoleIds.Contains(projectId)))
+                throw new BadRequestException("Some endpoints are not linked to this role");
+
+            await _roleEndpointRepository.Delete(roleEndpoints);
+        }
     }
 
     public interface IRoleService
@@ -119,5 +150,6 @@ namespace Auth_API.Services
         Task Create(CreateRoleRequest request);
         Task Delete(List<int> ids);
         Task AddEndpoints(int id, List<int> endpointIds);
+        Task RemoveEndpoints(int id, List<int> endpointIds);
     }
 }
