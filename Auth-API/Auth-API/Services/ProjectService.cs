@@ -75,7 +75,7 @@ namespace Auth_API.Services
             var isThereAnyProjectWithSameName = await _projectRepository.Any(project => project.Name == request.Name);
 
             if (isThereAnyProjectWithSameName)
-                throw new BadRequestException("There is already a project with the same name");
+                throw new BadRequestException("There is already a project with the informed name");
 
             var project = new Project
             {

@@ -35,7 +35,7 @@ namespace Auth_API.Services
         public async Task Create(CreateRoleRequest request)
         {
             if (string.IsNullOrWhiteSpace(request?.Name))
-                throw new BadRequestException("You must inform a valid");
+                throw new BadRequestException("You must inform a valid name");
 
             var project = await _projectRepository.GetSingle(project => project.Id == request.ProjectId);
             if(project == null)
@@ -66,7 +66,7 @@ namespace Auth_API.Services
                 throw new BadRequestException("Some roles were not found");
 
             if (roles.Any(role => role.Name == EDefaultRole.Admin.GetDescription()))
-                throw new BadRequestException("You can not delete a admin role");
+                throw new BadRequestException("You can not delete an admin role");
 
             if (roles.Select(role => role.ProjectId).Distinct().Count() > 1)
                 throw new BadRequestException("You can not delete roles from different projects in the same operation");

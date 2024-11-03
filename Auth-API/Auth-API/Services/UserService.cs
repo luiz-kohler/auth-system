@@ -156,7 +156,7 @@ namespace Auth_API.Services
                 .ToList();
 
             if (projectsWithSingleAdmin.Any())
-                throw new BadRequestException("User is the only admin in some projects and cannot be removed");
+                throw new BadRequestException("User is the only admin in some projects and can not be removed");
 
             var userProjectsIdsToRemove = userProjectsToRemove.Select(userProject =>  userProject.ProjectId).ToList();
 
@@ -185,7 +185,7 @@ namespace Auth_API.Services
                 .ToList();
 
             if (linkedRoleIds.Any())
-                throw new BadRequestException($"User is already linked with the roles: {string.Join(", ", linkedRoleIds)}");
+                throw new BadRequestException($"User is already linked in the roles: {string.Join(", ", linkedRoleIds)}");
 
             var roles = await _roleRepository.GetAll(role => roleIds.Contains(role.Id));
 
@@ -232,7 +232,7 @@ namespace Auth_API.Services
                 .ToList();
 
             if (rolesWithSingleAdmin.Any())
-                throw new BadRequestException("User is the only admin in some projects and cannot be removed");
+                throw new BadRequestException("User is the only admin in some projects and can not be removed");
 
             var userRolesIdsToRemove = userRolesToRemove.Select(userRole => userRole.RoleId).ToList();
 

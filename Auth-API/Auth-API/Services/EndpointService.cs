@@ -98,7 +98,7 @@ namespace Auth_API.Services
         {
             var adminRole = project.Roles.FirstOrDefault(role => role.Name == EDefaultRole.Admin.GetDescription());
             if (adminRole == null)
-                throw new BadRequestException("Admin role not found in project");
+                throw new BadRequestException("Admin role was not found in project");
 
             return newEndpoints.Select(endpoint => new RoleEndpoint
             {
