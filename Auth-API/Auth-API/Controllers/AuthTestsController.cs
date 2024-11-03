@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Auth_API.Controllers
 {
     [Route("auth-tests")]
-    public class AuthTestsController : Controller
+    public class AuthTestsController : ControllerBase
     {
 
         [HttpGet("no-auth-needed")]

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Auth_API.Controllers
 {
     [Route("endpoints")]
-    public class EndpointsController : Controller
+    public class EndpointsController : ControllerBase
     {
         private readonly IEndpointService _service;
 

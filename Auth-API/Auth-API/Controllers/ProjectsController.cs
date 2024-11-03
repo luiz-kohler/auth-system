@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Auth_API.Controllers
 {
     [Route("projects")]
-    public class ProjectsController : Controller
+    public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _service;
 
