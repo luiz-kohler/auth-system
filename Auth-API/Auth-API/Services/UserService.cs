@@ -16,6 +16,7 @@ namespace Auth_API.Services
         private readonly IRoleRepository _roleRepository;
         private readonly IRoleUserRepository _roleUserRepository;
         private readonly ITokenHandler _tokenHandler;
+        private readonly IHashHandler _hashHandler;
 
         public UserService(
             IUserRepository userRepository,
@@ -23,7 +24,8 @@ namespace Auth_API.Services
             IUserProjectRepository userProjectRepository,
             IRoleRepository roleRepository,
             IRoleUserRepository roleUserRepository,
-            ITokenHandler tokenHandler)
+            ITokenHandler tokenHandler,
+            IHashHandler hashHandler)
         {
             _userRepository = userRepository;
             _projectRepository = projectRepository;
@@ -31,6 +33,7 @@ namespace Auth_API.Services
             _roleRepository = roleRepository;
             _roleUserRepository = roleUserRepository;
             _tokenHandler = tokenHandler;
+            _hashHandler = hashHandler;
         }
 
         public async Task<GetUserTokenResposne> Create(CreateUserRequest request)
@@ -40,10 +43,14 @@ namespace Auth_API.Services
             if (!result.IsValid)
                 throw new ValidationException(result.Errors);
 
+            var isThereUserWithSameEmail = await _userRepository.Any(user => user.Email == request.Email);
+            if (isThereUserWithSameEmail)
+                throw new BadRequestException("There is already a registered user using this email");
+
             var user = new User();
             user.Name = request.Name;
             user.Email = request.Email;
-            user.Password = request.Password;
+            user.Password = _hashHandler.Hash(request.Password);
 
             await _userRepository.Add(user);
             await _userRepository.Commit();
@@ -53,9 +60,9 @@ namespace Auth_API.Services
 
         public async Task<GetUserTokenResposne> Login(LoginRequest request)
         {
-            var user = await _userRepository.GetSingle(user => user.Email == request.Email && user.Password == request.Password);
+            var user = await _userRepository.GetSingle(user => user.Email == request.Email);
 
-            if (user == null)
+            if (user == null || !_hashHandler.Verify(request.Password, user.Password))
                 throw new BadRequestException("Incorrect credentials");
 
             return new() { Token = _tokenHandler.Generate(user) };
