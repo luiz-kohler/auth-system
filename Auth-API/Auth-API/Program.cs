@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +17,13 @@ builder.Services.AddDbContextPool<Context>(opt => opt.UseSqlServer(builder.Confi
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddHostedService<PatchProjectService>();
+builder.Services.AddHostedService(provider => new PatchProjectService(new PatchProjectProfile
+{
+    Assembly = Assembly.GetExecutingAssembly(),
+    Email = builder.Configuration["AdminEmail"],
+    Password = builder.Configuration["AdminPassword"],
+    Project = builder.Configuration["Project"]
+}));
 
 // repositories
 builder.Services.AddScoped(typeof(IBaseEntityRepository<>), typeof(BaseEntityRepository<>));
