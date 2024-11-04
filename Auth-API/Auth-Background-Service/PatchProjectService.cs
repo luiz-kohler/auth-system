@@ -2,16 +2,17 @@
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Auth_Background_Service
 {
     public class PatchProjectService : IHostedService
     {
-        private readonly Assembly _assembly;
+        private readonly PatchProjectProfile _profile;
 
-        public PatchProjectService(Assembly assembly)
+        public PatchProjectService(PatchProjectProfile profile)
         {
-            _assembly = assembly;
+            _profile = profile;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -25,7 +26,20 @@ namespace Auth_Background_Service
         {
             Console.WriteLine("### Process executing started ###");
 
-            var result = _assembly.GetTypes()
+            var endpoints = GetAllEndpoints();
+
+            Console.WriteLine("### Process executing finished ###");
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            Console.WriteLine("### Process stopping ###");
+            return Task.CompletedTask;
+        }
+
+        private List<EndpointForCreateProject> GetAllEndpoints()
+        {
+            return _profile.Assembly.GetTypes()
                 .Where(type => typeof(ControllerBase).IsAssignableFrom(type) && !type.IsAbstract)
                 .SelectMany(type => type.GetMethods(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.Public))
                 .Where(m => !m.GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), true).Any())
@@ -38,32 +52,25 @@ namespace Auth_Background_Service
 
                     var httpMethod = httpMethodAttribute?.HttpMethods.FirstOrDefault() ?? "GET";
 
-                    return new
+                    return new EndpointForCreateProject
                     {
                         Route = route,
-                        Action = MapMethodToEHTTPMethod(httpMethod),
+                        HttpMethod = MapMethodToEHTTPMethod(httpMethod),
+                        IsPublic = false
                     };
                 })
                 .OrderBy(x => x.Route)
                 .ToList();
-
-            Console.WriteLine("### Process executing finished ###");
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            Console.WriteLine("### Process stopping ###");
-            return Task.CompletedTask;
-        }
-
-        private int MapMethodToEHTTPMethod(string method)
+        private EHttpMethod MapMethodToEHTTPMethod(string method)
         {
             return method.ToUpper() switch
             {
-                "PUT" => 0,
-                "POST" => 1,
-                "GET" => 2,
-                "DELETE" => 3,
+                "PUT" => EHttpMethod.PUT,
+                "POST" => EHttpMethod.POST,
+                "GET" => EHttpMethod.GET,
+                "DELETE" => EHttpMethod.DELETE,
                 _ => throw new ArgumentOutOfRangeException($"Unsupported HTTP method: {method}")
             };
         }
