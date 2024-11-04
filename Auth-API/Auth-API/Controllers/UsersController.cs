@@ -1,5 +1,6 @@
 ﻿using Auth_API.DTOs;
 using Auth_API.Services;
+using Auth_Background_Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth_API.Controllers
@@ -14,6 +15,7 @@ namespace Auth_API.Controllers
             _service = service;
         }
 
+        [Public]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
         {

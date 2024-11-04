@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Auth_Background_Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth_API.Controllers
@@ -6,7 +7,7 @@ namespace Auth_API.Controllers
     [Route("auth-tests")]
     public class AuthTestsController : ControllerBase
     {
-
+        [Public]
         [HttpGet("no-auth-needed")]
         public ActionResult NoAuthNeeded()
         {
