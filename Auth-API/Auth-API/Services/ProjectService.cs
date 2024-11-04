@@ -2,9 +2,11 @@
 using Auth_API.DTOs;
 using Auth_API.Entities;
 using Auth_API.Exceptions;
+using Auth_API.Infra;
 using Auth_API.Repositories;
 using Auth_API.Validator;
 using System.Data;
+using System.IdentityModel.Tokens.Jwt;
 using Endpoint = Auth_API.Entities.Endpoint;
 
 namespace Auth_API.Services
@@ -18,6 +20,7 @@ namespace Auth_API.Services
         private readonly IRoleRepository _roleRepository;
         private readonly IRoleUserRepository _roleUserRepository;
         private readonly IRoleEndpointRepository _roleEndpointRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public ProjectService(
             IUserRepository userRepository,
@@ -26,7 +29,8 @@ namespace Auth_API.Services
             IUserProjectRepository userProjectRepository,
             IRoleRepository roleRepository,
             IRoleUserRepository roleUserRepository,
-            IRoleEndpointRepository roleEndpointRepository)
+            IRoleEndpointRepository roleEndpointRepository,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _projectRepository = projectRepository;
@@ -35,21 +39,39 @@ namespace Auth_API.Services
             _roleRepository = roleRepository;
             _roleUserRepository = roleUserRepository;
             _roleEndpointRepository = roleEndpointRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task Create(CreateProjectRequest request)
         {
             ValidateRequest(request);
 
-            var admin = await GetAdminById(request.AdminId);
+            var adminId = GetUserIdByContext();
+            var admin = await GetAdminById(adminId);
+
             var project = await CreateProject(request);
             var endpoints = await CreateProjectEndpoints(request, project);
-            await CreateadminProjectRelationship(admin, project);
+
+            await CreateAdminProjectRelationship(admin, project);
+
             var adminRole = await CreateAdminRole(project);
+
             await AssignAdminToAdminRole(admin, adminRole);
             await AssignAdminRoleToProjectEndpoints(adminRole, endpoints);
 
             await _projectRepository.Commit();
+        }
+
+        private int GetUserIdByContext()
+        {
+            var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+            var handler = new JwtSecurityTokenHandler();
+
+            var jwtToken = handler.ReadJwtToken(token);
+            var userId = jwtToken.Claims.First(c => c.Type == TokenClaimTypes.NameIdentifier)?.Value;
+
+            return Convert.ToInt32(userId);
         }
 
         private void ValidateRequest(CreateProjectRequest request)
@@ -100,7 +122,7 @@ namespace Auth_API.Services
             return endpoints;
         }
 
-        private async Task CreateadminProjectRelationship(User admin, Project project)
+        private async Task CreateAdminProjectRelationship(User admin, Project project)
         {
             var userProject = new UserProject
             {

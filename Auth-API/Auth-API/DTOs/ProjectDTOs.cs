@@ -5,7 +5,6 @@ namespace Auth_API.DTOs
     public class CreateProjectRequest
     {
         public string Name { get; set; }
-        public int AdminId { get; set; }
         public List<EndpointForCreateProject> Endpoints { get; set; }
     }
 

@@ -40,6 +40,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IEndpointService, EndpointService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
 
 // handlers
 builder.Services.AddScoped<ITokenHandler, Auth_API.Common.TokenHandler>();
