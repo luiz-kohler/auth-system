@@ -2,7 +2,6 @@
 using Auth_API.DTOs;
 using Auth_API.Entities;
 using Auth_API.Exceptions;
-using Auth_API.Infra;
 using Auth_API.Repositories;
 using Auth_API.Validator;
 using System.Data;
@@ -245,7 +244,7 @@ namespace Auth_API.Services
         private async Task RemoveRolesFromProject(Project project)
         {
             var roleUsers = project.Roles?.SelectMany(role => role?.RoleUsers);
-            if(roleUsers.Any())
+            if (roleUsers.Any())
                 await _roleUserRepository.Delete(roleUsers);
 
             var roles = project.Roles;
@@ -258,10 +257,7 @@ namespace Auth_API.Services
             var project = await _projectRepository.GetSingle(p => p.Name == request.Name);
 
             if (project == null)
-            {
                 await Create(request);
-                return;
-            }
 
             var userId = GetUserIdByContext();
             var user = await _userRepository.GetSingle(u => u.Id == userId)
@@ -269,14 +265,10 @@ namespace Auth_API.Services
 
             var adminRole = GetAdminRole(project);
 
-            if (IsUserAuthorizedToUpsert(project, userId, adminRole.Id))
-            {
-                await UpdateProjectEndpoints(project, request, adminRole);
-            }
-            else
-            {
+            if (!IsUserAuthorizedToUpsert(project, userId, adminRole.Id))
                 throw new BadRequestException("You do not have authorization to upsert this project");
-            }
+
+            await UpdateProjectEndpoints(project, request, adminRole);
         }
 
         private async Task UpdateProjectEndpoints(Project project, UpsertProjectRequest request, Role adminRole)
@@ -287,14 +279,10 @@ namespace Auth_API.Services
                     newEndpoint.HttpMethod == currentEndpoint.HttpMethod &&
                     newEndpoint.IsPublic == currentEndpoint.IsPublic));
 
-            var endpointsToCreate = request.Endpoints
-                .Where(newEndpoint => !project.Endpoints.Any(currentEndpoint =>
-                    currentEndpoint.Route == newEndpoint.Route &&
-                    currentEndpoint.HttpMethod == newEndpoint.HttpMethod &&
-                    currentEndpoint.IsPublic == newEndpoint.IsPublic));
-
             await RemoveEndpointsFromProject(project, endpointsToRemove);
+
             var newEndpoints = await CreateEndpointsForProject(request, project);
+
             await AssignAdminRoleToNewEndpoints(adminRole, newEndpoints);
         }
 
@@ -304,9 +292,7 @@ namespace Auth_API.Services
 
             var roleEndpointsToDelete = endpointsToRemove.SelectMany(e => e.RoleEndpoints);
             if (roleEndpointsToDelete.Any())
-            {
                 await _roleEndpointRepository.Delete(roleEndpointsToDelete);
-            }
 
             await _endpointRepository.Delete(endpointsToRemove);
         }
@@ -323,12 +309,16 @@ namespace Auth_API.Services
                 })
                 .ToList();
 
-            await _endpointRepository.Add(endpoints);
+            if(endpoints.Any())
+                await _endpointRepository.Add(endpoints);
+                
             return endpoints;
         }
 
         private async Task AssignAdminRoleToNewEndpoints(Role adminRole, List<Endpoint> newEndpoints)
         {
+            if (!newEndpoints.Any()) return;
+
             var roleEndpoints = newEndpoints.Select(endpoint => new RoleEndpoint
             {
                 Endpoint = endpoint,
