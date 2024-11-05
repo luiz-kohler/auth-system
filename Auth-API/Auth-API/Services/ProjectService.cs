@@ -273,21 +273,24 @@ namespace Auth_API.Services
 
         private async Task UpdateProjectEndpoints(Project project, UpsertProjectRequest request, Role adminRole)
         {
+            await RemoveEndpointsFromProject(request, project);
+
+            var newEndpoints = await CreateEndpointsForProject(request, project);
+
+            if(newEndpoints.Any())
+                await AssignAdminRoleToNewEndpoints(adminRole, newEndpoints);
+
+            await _endpointRepository.Commit();
+        }
+
+        private async Task RemoveEndpointsFromProject(UpsertProjectRequest request, Project project)
+        {
             var endpointsToRemove = project.Endpoints
                 .Where(currentEndpoint => !request.Endpoints.Any(newEndpoint =>
                     newEndpoint.Route == currentEndpoint.Route &&
                     newEndpoint.HttpMethod == currentEndpoint.HttpMethod &&
                     newEndpoint.IsPublic == currentEndpoint.IsPublic));
 
-            await RemoveEndpointsFromProject(project, endpointsToRemove);
-
-            var newEndpoints = await CreateEndpointsForProject(request, project);
-
-            await AssignAdminRoleToNewEndpoints(adminRole, newEndpoints);
-        }
-
-        private async Task RemoveEndpointsFromProject(Project project, IEnumerable<Endpoint> endpointsToRemove)
-        {
             if (!endpointsToRemove.Any()) return;
 
             var roleEndpointsToDelete = endpointsToRemove.SelectMany(e => e.RoleEndpoints);
@@ -299,20 +302,23 @@ namespace Auth_API.Services
 
         private async Task<List<Endpoint>> CreateEndpointsForProject(UpsertProjectRequest request, Project project)
         {
-            var endpoints = request.Endpoints
-                .Select(e => new Endpoint
-                {
-                    Route = e.Route,
-                    HttpMethod = e.HttpMethod,
-                    IsPublic = e.IsPublic,
-                    Project = project
-                })
-                .ToList();
+            var endpointsToCreate = request.Endpoints
+                .Where(newEndpoint => !project.Endpoints.Any(currentEndpoint =>
+                    currentEndpoint.Route == newEndpoint.Route &&
+                    currentEndpoint.HttpMethod == newEndpoint.HttpMethod &&
+                    currentEndpoint.IsPublic == newEndpoint.IsPublic))
+                    .Select(endpoint => new Endpoint
+                    {
+                        Route = endpoint.Route,
+                        HttpMethod = endpoint.HttpMethod,
+                        IsPublic = endpoint.IsPublic,
+                        Project = project
+                    }).ToList();
 
-            if(endpoints.Any())
-                await _endpointRepository.Add(endpoints);
+            if(endpointsToCreate.Any())
+                await _endpointRepository.Add(endpointsToCreate);
                 
-            return endpoints;
+            return endpointsToCreate;
         }
 
         private async Task AssignAdminRoleToNewEndpoints(Role adminRole, List<Endpoint> newEndpoints)
