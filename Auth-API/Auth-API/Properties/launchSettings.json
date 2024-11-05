@@ -10,7 +10,7 @@
         "JWTKey": "iZvh55fBzMpwiyFwzcBFxzE8aUExGWEsusJhIGZmQdKdc0mvvv49Jfq3YCEjcbsG",
         "HashSalt": "$2a$11$R0AbOp8b7glDg1Do9SbCRO",
         "Project": "auth-api",
-        "AdminEmail": "testatinho69.2@gmail.com",
+        "AdminEmail": "teste_123@gmail.com",
         "AdminPassword": "12345678"
       },
       "dotnetRunMessages": true,
