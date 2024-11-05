@@ -3,13 +3,10 @@ using Auth_API.Infra;
 using Auth_API.Repositories;
 using Auth_API.Services;
 using Auth_Background_Service;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,13 +14,15 @@ builder.Services.AddDbContextPool<Context>(opt => opt.UseSqlServer(builder.Confi
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddHostedService(provider => new PatchProjectService(new PatchProjectProfile
-{
-    Assembly = Assembly.GetExecutingAssembly(),
-    Email = builder.Configuration["AdminEmail"],
-    Password = builder.Configuration["AdminPassword"],
-    Project = builder.Configuration["Project"]
-}));
+builder.Services.AddHostedService(provider =>
+    new UpsertProjectService(
+        new UpsertProjectProfile
+        {
+            Assembly = Assembly.GetExecutingAssembly(),
+            Email = builder.Configuration["AdminEmail"],
+            Password = builder.Configuration["AdminPassword"],
+            Project = builder.Configuration["Project"]
+        }, provider.GetRequiredService<IHostApplicationLifetime>()));
 
 // repositories
 builder.Services.AddScoped(typeof(IBaseEntityRepository<>), typeof(BaseEntityRepository<>));
@@ -53,6 +52,13 @@ builder.Services.AddExceptionHandler(options =>
 });
 
 var app = builder.Build();
+
+app.UseCors(option => option
+    .SetIsOriginAllowed(_ => true)
+    .AllowAnyHeader()
+    .WithMethods("POST", "PUT", "DELETE", "GET")
+    .AllowCredentials()
+);
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 app.UseMiddleware<GlobalRoutePrefixMiddleware>($"/{builder.Configuration["Project"]}");

@@ -21,6 +21,13 @@ namespace Auth_API.Controllers
             return Ok();
         }
 
+        [HttpPost("upsert")]
+        public async Task<IActionResult> Upsert([FromBody] UpsertProjectRequest request)
+        {
+            await _service.Upsert(request);
+            return Ok();
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetMany()
         {

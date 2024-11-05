@@ -2,7 +2,7 @@
 
 namespace Auth_Background_Service
 {
-    public class PatchProjectProfile
+    public class UpsertProjectProfile
     {
         public string Email { get; set; }
         public string Password { get; set; }

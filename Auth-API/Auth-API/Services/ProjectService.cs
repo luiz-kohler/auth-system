@@ -252,11 +252,110 @@ namespace Auth_API.Services
             if (roles.Any())
                 await _roleRepository.Delete(roles);
         }
+
+        public async Task Upsert(UpsertProjectRequest request)
+        {
+            var project = await _projectRepository.GetSingle(p => p.Name == request.Name);
+
+            if (project == null)
+            {
+                await Create(request);
+                return;
+            }
+
+            var userId = GetUserIdByContext();
+            var user = await _userRepository.GetSingle(u => u.Id == userId)
+                       ?? throw new BadRequestException("User not found");
+
+            var adminRole = GetAdminRole(project);
+
+            if (IsUserAuthorizedToUpsert(project, userId, adminRole.Id))
+            {
+                await UpdateProjectEndpoints(project, request, adminRole);
+            }
+            else
+            {
+                throw new BadRequestException("You do not have authorization to upsert this project");
+            }
+        }
+
+        private async Task UpdateProjectEndpoints(Project project, UpsertProjectRequest request, Role adminRole)
+        {
+            var endpointsToRemove = project.Endpoints
+                .Where(currentEndpoint => !request.Endpoints.Any(newEndpoint =>
+                    newEndpoint.Route == currentEndpoint.Route &&
+                    newEndpoint.HttpMethod == currentEndpoint.HttpMethod &&
+                    newEndpoint.IsPublic == currentEndpoint.IsPublic));
+
+            var endpointsToCreate = request.Endpoints
+                .Where(newEndpoint => !project.Endpoints.Any(currentEndpoint =>
+                    currentEndpoint.Route == newEndpoint.Route &&
+                    currentEndpoint.HttpMethod == newEndpoint.HttpMethod &&
+                    currentEndpoint.IsPublic == newEndpoint.IsPublic));
+
+            await RemoveEndpointsFromProject(project, endpointsToRemove);
+            var newEndpoints = await CreateEndpointsForProject(request, project);
+            await AssignAdminRoleToNewEndpoints(adminRole, newEndpoints);
+        }
+
+        private async Task RemoveEndpointsFromProject(Project project, IEnumerable<Endpoint> endpointsToRemove)
+        {
+            if (!endpointsToRemove.Any()) return;
+
+            var roleEndpointsToDelete = endpointsToRemove.SelectMany(e => e.RoleEndpoints);
+            if (roleEndpointsToDelete.Any())
+            {
+                await _roleEndpointRepository.Delete(roleEndpointsToDelete);
+            }
+
+            await _endpointRepository.Delete(endpointsToRemove);
+        }
+
+        private async Task<List<Endpoint>> CreateEndpointsForProject(UpsertProjectRequest request, Project project)
+        {
+            var endpoints = request.Endpoints
+                .Select(e => new Endpoint
+                {
+                    Route = e.Route,
+                    HttpMethod = e.HttpMethod,
+                    IsPublic = e.IsPublic,
+                    Project = project
+                })
+                .ToList();
+
+            await _endpointRepository.Add(endpoints);
+            return endpoints;
+        }
+
+        private async Task AssignAdminRoleToNewEndpoints(Role adminRole, List<Endpoint> newEndpoints)
+        {
+            var roleEndpoints = newEndpoints.Select(endpoint => new RoleEndpoint
+            {
+                Endpoint = endpoint,
+                Role = adminRole
+            }).ToList();
+
+            await _roleEndpointRepository.Add(roleEndpoints);
+        }
+
+        private bool IsUserAuthorizedToUpsert(Project project, int userId, int adminRoleId)
+        {
+            return project.UserProjects
+                .Select(up => up.User)
+                .Any(user => user.Id == userId && user.RoleUsers.Any(ru => ru.RoleId == adminRoleId));
+        }
+
+        private Role GetAdminRole(Project project)
+        {
+            return project.Roles.FirstOrDefault(r => r.Name == EDefaultRole.Admin.GetDescription())
+                   ?? throw new InvalidOperationException("Admin role not found in the project.");
+        }
     }
 
     public interface IProjectService
     {
         Task Create(CreateProjectRequest request);
+        Task Upsert(UpsertProjectRequest request);
         Task<IEnumerable<ProjectToGetManyResponse>> GetMany();
         Task<GetProjectByIdResponse> Get(int id);
         Task Delete(int id);

@@ -2,21 +2,31 @@
 
 namespace Auth_Background_Service
 {
-    public class CreateProjectRequest
+    internal class UpsertProjectRequest
     {
         public string Name { get; set; }
-        public int AdminId { get; set; }
-        public List<EndpointForCreateProject> Endpoints { get; set; }
+        public List<EndpointForUpsertProject> Endpoints { get; set; }
     }
 
-    public class EndpointForCreateProject
+    internal class LoginRequest
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
+    internal class EndpointForUpsertProject
     {
         public string Route { get; set; }
         public EHttpMethod HttpMethod { get; set; }
         public bool IsPublic { get; set; }
     }
 
-    public enum EHttpMethod
+    public class LoginResponse
+    {
+        public string Token { get; set; }
+    }
+
+    internal enum EHttpMethod
     {
         [Description("PUT")]
         PUT,

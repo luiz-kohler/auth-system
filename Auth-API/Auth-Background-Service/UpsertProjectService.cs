@@ -2,31 +2,39 @@
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Auth_Background_Service
 {
-    public class PatchProjectService : IHostedService
+    public class UpsertProjectService : IHostedService
     {
-        private readonly PatchProjectProfile _profile;
+        private readonly IHostApplicationLifetime _appLifetime;
+        private readonly UpsertProjectProfile _profile;
+        private readonly AuthApiClient _authApiClient;
 
-        public PatchProjectService(PatchProjectProfile profile)
+        public UpsertProjectService(UpsertProjectProfile profile, IHostApplicationLifetime appLifetime)
         {
+            _appLifetime = appLifetime;
             _profile = profile;
+            _authApiClient = new AuthApiClient();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine("### Process starting ###");
-            ExecuteProcess();
+            _appLifetime.ApplicationStarted.Register(() =>
+            {
+                Task.Run(() => ExecuteProcess(), cancellationToken);
+            });
+
             return Task.CompletedTask;
         }
 
-        private void ExecuteProcess()
+        private async Task ExecuteProcess()
         {
             Console.WriteLine("### Process executing started ###");
 
-            var endpoints = GetAllEndpoints();
+            var token = await Login();
+
+            await UpsertProject(token);
 
             Console.WriteLine("### Process executing finished ###");
         }
@@ -37,7 +45,29 @@ namespace Auth_Background_Service
             return Task.CompletedTask;
         }
 
-        private List<EndpointForCreateProject> GetAllEndpoints()
+        private async Task<string> Login()
+        {
+            var loginRequest = new LoginRequest
+            {
+                Email = _profile.Email,
+                Password = _profile.Password,
+            };
+
+            return await _authApiClient.Login(loginRequest);
+        }
+
+        private async Task UpsertProject(string token)
+        {
+            var request = new UpsertProjectRequest
+            {
+                Name = _profile.Project,
+                Endpoints = GetAllEndpoints()
+            };
+
+            await _authApiClient.Upsert(request, token);
+        }
+
+        private List<EndpointForUpsertProject> GetAllEndpoints()
         {
             return _profile.Assembly.GetTypes()
                 .Where(type => typeof(ControllerBase).IsAssignableFrom(type) && !type.IsAbstract)
@@ -47,16 +77,16 @@ namespace Auth_Background_Service
                 {
                     var controllerRoute = method.DeclaringType.GetCustomAttribute<RouteAttribute>()?.Template ?? method.DeclaringType.Name.Replace("Controller", "");
                     var httpMethodAttribute = method.GetCustomAttributes().FirstOrDefault(attr => attr is HttpMethodAttribute) as HttpMethodAttribute;
-                    var actionRoute = httpMethodAttribute?.Template ?? method.Name;
-                    var route = $"{controllerRoute}/{actionRoute}".Trim('/');
-
+                    var actionRoute = httpMethodAttribute?.Template ?? "";
+                    var route = $"{controllerRoute}/{actionRoute}".Trim('/').ToLower();
                     var httpMethod = httpMethodAttribute?.HttpMethods.FirstOrDefault() ?? "GET";
+                    var isPublic = method.GetCustomAttributes().Any(attr => attr is Public);
 
-                    return new EndpointForCreateProject
+                    return new EndpointForUpsertProject
                     {
-                        Route = route,
+                        Route = $"/{route}",
                         HttpMethod = MapMethodToEHTTPMethod(httpMethod),
-                        IsPublic = false
+                        IsPublic = isPublic
                     };
                 })
                 .OrderBy(x => x.Route)

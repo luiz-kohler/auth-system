@@ -5,10 +5,10 @@ namespace Auth_API.DTOs
     public class CreateProjectRequest
     {
         public string Name { get; set; }
-        public List<EndpointForCreateProject> Endpoints { get; set; }
+        public List<EndpointForProjectRequests> Endpoints { get; set; }
     }
 
-    public class EndpointForCreateProject
+    public class EndpointForProjectRequests
     {
         public string Route { get; set; }
         public EHttpMethod HttpMethod { get; set; }
@@ -49,5 +49,9 @@ namespace Auth_API.DTOs
     {
         public int Id { get; set; }
         public string Name { get; set; }
+    }
+
+    public class UpsertProjectRequest : CreateProjectRequest
+    {
     }
 }
