@@ -21,7 +21,7 @@ namespace Auth_Background_Service
         public bool IsPublic { get; set; }
     }
 
-    public class LoginResponse
+    internal class LoginResponse
     {
         public string Token { get; set; }
     }

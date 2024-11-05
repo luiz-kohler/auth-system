@@ -1,6 +1,6 @@
 ﻿namespace Auth_Background_Service
 {
-    public class Public : Attribute
+    public class Public: Attribute
     {
     }
 }

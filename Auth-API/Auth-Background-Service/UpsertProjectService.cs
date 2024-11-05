@@ -80,7 +80,7 @@ namespace Auth_Background_Service
                     var actionRoute = httpMethodAttribute?.Template ?? "";
                     var route = $"{controllerRoute}/{actionRoute}".Trim('/').ToLower();
                     var httpMethod = httpMethodAttribute?.HttpMethods.FirstOrDefault() ?? "GET";
-                    var isPublic = method.GetCustomAttributes().Any(attr => attr is Public);
+                    var isPublic = method.GetCustomAttributes().Any(attr => attr is PublicAttribute);
 
                     return new EndpointForUpsertProject
                     {
