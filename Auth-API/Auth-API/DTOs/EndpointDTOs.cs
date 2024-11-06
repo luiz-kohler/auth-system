@@ -16,6 +16,7 @@ namespace Auth_API.DTOs
         public EHttpMethod? HttpMethod { get; set; }
         public bool? IsPublic { get; set; }
         public int? ProjectId { get; set; }
+        public string ProjectName { get; set; }
         public int? RoleId { get; set; }
     }
 
