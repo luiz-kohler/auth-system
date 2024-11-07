@@ -71,5 +71,13 @@ namespace Auth_API.Controllers
             await _service.RemoveFromRoles(id, roleIds);
             return Ok();
         }
+
+        [Public]
+        [HttpGet("{id}/has-access-to-endpoint/{endpointId}")]
+        public async Task<IActionResult> VerifyUserHasAccess([FromRoute] int id, [FromRoute]int endpointId)
+        {
+            await _service.VerifyUserHasAccess(id, endpointId);
+            return Ok();
+        }
     }
 }

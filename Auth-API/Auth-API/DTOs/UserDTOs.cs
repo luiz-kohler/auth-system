@@ -36,6 +36,11 @@
         public IEnumerable<RoleForUserResponse> Roles { get; set; }
     }
 
+    public class VerifyUserHasAccessResponse
+    {
+        public bool HasAccess { get; set; }
+    }
+
     public class ProjectForUserResponse
     {
         public int Id { get; set; }

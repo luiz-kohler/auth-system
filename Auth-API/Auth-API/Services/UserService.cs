@@ -249,6 +249,14 @@ namespace Auth_API.Services
 
             await _roleUserRepository.Commit();
         }
+
+        public async Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int userId, int endpointId)
+        {
+            return new VerifyUserHasAccessResponse
+            {
+                HasAccess = await _userRepository.UserHasAccess(userId, endpointId)
+            };
+        }
     }
 
     public interface IUserService
@@ -261,5 +269,6 @@ namespace Auth_API.Services
         Task RemoveFromProjects(int userId, List<int> projectIds);
         Task AddToRoles(int userId, List<int> roleIds);
         Task RemoveFromRoles(int userId, List<int> roleIds);
+        Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int userId, int endpointId);
     }
 }
