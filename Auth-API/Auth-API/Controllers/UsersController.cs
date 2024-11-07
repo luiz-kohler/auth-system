@@ -23,6 +23,7 @@ namespace Auth_API.Controllers
             return Ok(token);
         }
 
+        [Public]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
