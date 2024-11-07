@@ -132,12 +132,12 @@ namespace Auth_API.Services
         {
             var endpoints = await _endpointRepository.GetAll(endpoint =>
                  (!request.Id.HasValue || endpoint.Id == request.Id.Value) &&
-                 (!string.IsNullOrEmpty(request.Route) || endpoint.Route == request.Route) &&
+                 (string.IsNullOrEmpty(request.Route) || endpoint.Route == request.Route) &&
                  (!request.IsPublic.HasValue || endpoint.IsPublic == request.IsPublic.Value) &&
                  (!request.HttpMethod.HasValue || endpoint.HttpMethod == request.HttpMethod.Value) &&
                  (!request.ProjectId.HasValue || endpoint.ProjectId == request.ProjectId.Value) &&
                  (!request.RoleId.HasValue || endpoint.RoleEndpoints.Any(roleEndpoint => roleEndpoint.RoleId == request.RoleId.Value)) &&
-                 (!string.IsNullOrEmpty(request.ProjectName) || endpoint.Project.Name == request.ProjectName));
+                 (string.IsNullOrEmpty(request.ProjectName) || endpoint.Project.Name == request.ProjectName));
 
             return endpoints.Select(endpoint => new EndpointResponse
             {
