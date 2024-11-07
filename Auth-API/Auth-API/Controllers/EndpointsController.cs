@@ -1,5 +1,6 @@
 ﻿using Auth_API.DTOs;
 using Auth_API.Services;
+using Auth_Background_Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth_API.Controllers
@@ -28,7 +29,7 @@ namespace Auth_API.Controllers
             return Ok();
         }
 
-
+        [Public]
         [HttpGet]
         public async Task<IActionResult> GetMany([FromQuery] GetManyEndpointRequest request)
         {
