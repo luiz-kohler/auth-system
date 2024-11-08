@@ -2,11 +2,22 @@
 
 namespace Auth_API.DTOs
 {
+    public class LinkEndpointsToProject
+    {
+        public int ProjectId { get; set; }
+        public List<CreateEndpointRequest> Endpoints { get; set; }
+    }
+
     public class CreateEndpointRequest
     {
         public string Route { get; set; }
         public EHttpMethod HttpMethod { get; set; }
         public bool IsPublic { get; set; }
+    }
+
+    public class DeleteManyRequest
+    {
+        public List<int> Ids { get; set; }
     }
 
     public class GetManyEndpointRequest

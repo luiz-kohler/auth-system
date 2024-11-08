@@ -1,6 +1,7 @@
 ﻿using Auth_API.DTOs;
 using Auth_API.Services;
 using Auth_Background_Service;
+using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth_API.Controllers
@@ -31,53 +32,53 @@ namespace Auth_API.Controllers
             return Ok(token);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetMany([FromQuery] GetManyUsersRequest request)
+        [HttpPost("search-many")]
+        public async Task<IActionResult> GetMany([FromBody] GetManyUsersRequest request)
         {
             var users = await _service.GetMany(request);
             return Ok(users);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        [HttpPost("delete-one")]
+        public async Task<IActionResult> Delete([FromBody] DeleteUserRequest request)
         {
-            await _service.Delete(id);
+            await _service.Delete(request.Id);
             return Ok();
         }
 
-        [HttpPost("{id}/add-to-projects")]
-        public async Task<IActionResult> AddToProjects([FromRoute] int id, [FromBody] List<int> projectIds)
+        [HttpPost("link-to-project")]
+        public async Task<IActionResult> AddToProjects([FromBody] LinkToProjectsRequest request)
         {
-            await _service.AddToProjects(id, projectIds);
+            await _service.AddToProjects(request.Id, request.ProjectIds);
             return Ok();
         }
 
-        [HttpDelete("{id}/remove-from-projects")]
-        public async Task<IActionResult> RemoveFromProjects([FromRoute] int id, [FromBody] List<int> projectIds)
+        [HttpPost("unlink-from-project")]
+        public async Task<IActionResult> RemoveFromProjects([FromBody] UnlinkFromProjectsRequest request)
         {
-            await _service.RemoveFromProjects(id, projectIds);
+            await _service.RemoveFromProjects(request.Id, request.ProjectIds);
             return Ok();
         }
 
-        [HttpPost("{id}/add-to-roles")]
-        public async Task<IActionResult> AddToRoles([FromRoute] int id, [FromBody] List<int> roleIds)
+        [HttpPost("link-to-roles")]
+        public async Task<IActionResult> AddToRoles([FromBody] LinkToRolesRequest request)
         {
-            await _service.AddToRoles(id, roleIds);
+            await _service.AddToRoles(request.Id, request.RoleIds);
             return Ok();
         }
 
-        [HttpDelete("{id}/remove-from-roles")]
-        public async Task<IActionResult> RemoveFromRoles([FromRoute] int id, [FromBody] List<int> roleIds)
+        [HttpPost("unlink-from-roles")]
+        public async Task<IActionResult> RemoveFromRoles([FromBody] UnlinkFromRolesRequest request)
         {
-            await _service.RemoveFromRoles(id, roleIds);
+            await _service.RemoveFromRoles(request.Id, request.RoleIds);
             return Ok();
         }
 
         [Public]
-        [HttpGet("{id}/has-access-to-endpoint/{endpointId}")]
-        public async Task<IActionResult> VerifyUserHasAccess([FromRoute] int id, [FromRoute]int endpointId)
+        [HttpPost("has-access-to-endpoint")]
+        public async Task<IActionResult> VerifyUserHasAccess(VerifyUserHasAccessRequest request)
         {
-            await _service.VerifyUserHasAccess(id, endpointId);
+            await _service.VerifyUserHasAccess(request.Id, request.EndpointId);
             return Ok();
         }
     }

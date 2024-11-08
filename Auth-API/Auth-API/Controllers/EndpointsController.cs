@@ -15,23 +15,23 @@ namespace Auth_API.Controllers
             _service = service;
         }
 
-        [HttpPost("projects/{projectId}")]
-        public async Task<IActionResult> Create([FromBody] List<CreateEndpointRequest> request, int projectId)
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] LinkEndpointsToProject request)
         {
-            await _service.Create(request, projectId);
+            await _service.Create(request.Endpoints, request.ProjectId);
             return Ok();
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete([FromBody] List<int> ids)
+        [HttpPost("delete-many")]
+        public async Task<IActionResult> Delete([FromBody] DeleteManyRequest request)
         {
-            await _service.Delete(ids);
+            await _service.Delete(request.Ids);
             return Ok();
         }
 
         [Public]
-        [HttpGet]
-        public async Task<IActionResult> GetMany([FromQuery] GetManyEndpointRequest request)
+        [HttpPost("search-many")]
+        public async Task<IActionResult> GetMany([FromBody] GetManyEndpointRequest request)
         {
             var repsonse = await _service.GetMany(request);
             return Ok(repsonse);

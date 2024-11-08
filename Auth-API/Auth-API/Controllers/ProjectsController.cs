@@ -14,7 +14,7 @@ namespace Auth_API.Controllers
             _service = service;
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateProjectRequest request)
         {
             await _service.Create(request);
@@ -28,24 +28,24 @@ namespace Auth_API.Controllers
             return Ok();
         }
 
-        [HttpGet]
+        [HttpPost("search-many")]
         public async Task<IActionResult> GetMany()
         {
             var response = await _service.GetMany();
             return Ok(response);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get([FromRoute] int id)
+        [HttpPost("search-one")]
+        public async Task<IActionResult> Get([FromBody] GetOneProjectRequest request)
         {
-            var response = await _service.Get(id);
+            var response = await _service.Get(request.Id);
             return Ok(response);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        [HttpPost("delete-one")]
+        public async Task<IActionResult> Delete([FromBody] DeleteOneProjectRequest request)
         {
-            await _service.Delete(id);
+            await _service.Delete(request.Id);
             return Ok();
         }
     }

@@ -2,6 +2,17 @@
 
 namespace Auth_API.DTOs
 {
+    public class GetOneProjectRequest
+    {
+        public int Id { get; set; }
+    }
+
+    public class DeleteOneProjectRequest
+    {
+        public int Id { get; set; }
+    }
+
+
     public class CreateProjectRequest
     {
         public string Name { get; set; }

@@ -1,11 +1,35 @@
 ﻿using Auth_API.Common;
 
-namespace Auth_API.Validator
+namespace Auth_API.DTOs
 {
     public class CreateRoleRequest
     {
         public string Name { get; set; }
         public int ProjectId { get; set; }
+    }
+
+    public class DeleteRolesRequest
+    {
+        public List<int> Ids { get; set; }
+    }
+
+    public class LinkToEndpoint
+    {
+        public int Id { get; set; }
+        public List<int> Endpoints { get; set; }
+
+    }
+
+    public class UnlinkToEndpoint
+    {
+        public int Id { get; set; }
+        public List<int> Endpoints { get; set; }
+
+    }
+
+    public class GetOneRoleRequest
+    {
+        public int Id { get; set; }
     }
 
     public class GetManyRolesRequest

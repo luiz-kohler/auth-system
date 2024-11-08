@@ -8,16 +8,16 @@ namespace Auth_API.Controllers
     public class AuthTestsController : ControllerBase
     {
         [Public]
-        [HttpGet("no-auth-needed")]
+        [HttpPost("no-auth-needed")]
         public ActionResult NoAuthNeeded()
         {
-            return Ok("^_~");
+            return Ok();
         }
 
-        [HttpGet("auth-needed")]
+        [HttpPost("auth-needed")]
         public ActionResult AuthNeeded()
         {
-            return Ok("^_~");
+            return Ok();
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Auth_API.DTOs;
 using Auth_API.Services;
-using Auth_API.Validator;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth_API.Controllers
@@ -15,45 +14,45 @@ namespace Auth_API.Controllers
             _service = service;
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateRoleRequest request)
         {
             await _service.Create(request);
             return Ok();
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete([FromBody] List<int> ids)
+        [HttpPost("delete-many")]
+        public async Task<IActionResult> Delete([FromBody] DeleteRolesRequest request)
         {
-            await _service.Delete(ids);
+            await _service.Delete(request.Ids);
             return Ok();
         }
 
-        [HttpPost("{id}/endpoints")]
-        public async Task<IActionResult> LinkEndpoints([FromRoute] int id, [FromBody] List<int> endpointIds)
+        [HttpPost("link-endpoints")]
+        public async Task<IActionResult> LinkEndpoints([FromBody] LinkToEndpoint request)
         {
-            await _service.AddEndpoints(id, endpointIds);
+            await _service.AddEndpoints(request.Id, request.Endpoints);
             return Ok();
         }
 
-        [HttpDelete("{id}/endpoints")]
-        public async Task<IActionResult> UnlinkEndpoints([FromRoute] int id, [FromBody] List<int> endpointIds)
+        [HttpPost("unlink-endpoints")]
+        public async Task<IActionResult> UnlinkEndpoints([FromBody] UnlinkToEndpoint request)
         {
-            await _service.RemoveEndpoints(id, endpointIds);
+            await _service.RemoveEndpoints(request.Id, request.Endpoints);
             return Ok();
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetMany([FromQuery] GetManyRolesRequest request)
+        [HttpPost("search-many")]
+        public async Task<IActionResult> GetMany([FromBody] GetManyRolesRequest request)
         {
             var response = await _service.GetMany(request);
             return Ok(response);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetMany([FromRoute] int id)
+        [HttpPost("search-one")]
+        public async Task<IActionResult> Get([FromBody] GetOneRoleRequest request)
         {
-            var response = await _service.Get(id);
+            var response = await _service.Get(request.Id);
             return Ok(response);
         }
     }
