@@ -2,6 +2,7 @@
 using Auth_API.DTOs;
 using Auth_API.Entities;
 using Auth_API.Exceptions;
+using Auth_API.Infra;
 using Auth_API.Repositories;
 using Auth_API.Validator;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace Auth_API.Services
         private readonly IRoleUserRepository _roleUserRepository;
         private readonly ITokenHandler _tokenHandler;
         private readonly IHashHandler _hashHandler;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUserRepository userRepository,
@@ -25,7 +27,8 @@ namespace Auth_API.Services
             IRoleRepository roleRepository,
             IRoleUserRepository roleUserRepository,
             ITokenHandler tokenHandler,
-            IHashHandler hashHandler)
+            IHashHandler hashHandler,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _projectRepository = projectRepository;
@@ -34,6 +37,7 @@ namespace Auth_API.Services
             _roleUserRepository = roleUserRepository;
             _tokenHandler = tokenHandler;
             _hashHandler = hashHandler;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<GetUserTokenResposne> Create(CreateUserRequest request)
@@ -250,8 +254,11 @@ namespace Auth_API.Services
             await _roleUserRepository.Commit();
         }
 
-        public async Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int userId, int endpointId)
+        public async Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId)
         {
+            var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last(); 
+            var userId = _tokenHandler.ExtractUserId(token);
+
             return new VerifyUserHasAccessResponse
             {
                 HasAccess = await _userRepository.UserHasAccess(userId, endpointId)
@@ -269,6 +276,6 @@ namespace Auth_API.Services
         Task RemoveFromProjects(int userId, List<int> projectIds);
         Task AddToRoles(int userId, List<int> roleIds);
         Task RemoveFromRoles(int userId, List<int> roleIds);
-        Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int userId, int endpointId);
+        Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
     }
 }
