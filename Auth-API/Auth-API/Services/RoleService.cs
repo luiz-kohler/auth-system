@@ -1,4 +1,5 @@
 ﻿using Auth_API.Common;
+using Auth_API.DTOs;
 using Auth_API.Entities;
 using Auth_API.Exceptions;
 using Auth_API.Repositories;
