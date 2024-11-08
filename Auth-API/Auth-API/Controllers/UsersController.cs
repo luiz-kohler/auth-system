@@ -76,10 +76,10 @@ namespace Auth_API.Controllers
 
         [Public]
         [HttpPost("has-access-to-endpoint")]
-        public async Task<IActionResult> VerifyUserHasAccess(VerifyUserHasAccessRequest request)
+        public async Task<IActionResult> VerifyUserHasAccess([FromBody] VerifyUserHasAccessRequest request)
         {
-            await _service.VerifyUserHasAccess(request.Id, request.EndpointId);
-            return Ok();
+            var response = await _service.VerifyUserHasAccess(request.EndpointId);
+            return Ok(response);
         }
     }
 }
