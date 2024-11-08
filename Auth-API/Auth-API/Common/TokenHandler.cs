@@ -56,12 +56,30 @@ namespace Auth_API.Common
                 return false; 
             }
         }
+
+        public int ExtractUserId(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                throw new UnauthorizedAccessException("Authorization token is missing.");
+
+            var handler = new JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(token))
+                throw new UnauthorizedAccessException("Invalid authorization token.");
+
+            var jwtToken = handler.ReadJwtToken(token);
+            var nameIdentifierClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == TokenClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(nameIdentifierClaim))
+                throw new UnauthorizedAccessException("User identifier claim is missing in the token.");
+
+            return int.Parse(nameIdentifierClaim);
+        }
     }
 
     public interface ITokenHandler
     {
         string Generate(User user);
         bool Validate(string token);
+        int ExtractUserId(string token);
 
     }
 
