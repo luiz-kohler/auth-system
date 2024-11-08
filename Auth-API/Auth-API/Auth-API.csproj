@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Auth-Background-Service\Auth-Background-Service.csproj" />
+    <ProjectReference Include="..\Auth-Middleware\Auth-Middleware.csproj" />
   </ItemGroup>
 
 </Project>

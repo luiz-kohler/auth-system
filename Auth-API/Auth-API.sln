@@ -5,7 +5,9 @@ VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth-API", "Auth-API\Auth-API.csproj", "{9124B14F-F987-47A7-BC09-D7583C759580}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth-Background-Service", "Auth-Background-Service\Auth-Background-Service.csproj", "{9CC8866E-6149-4384-92C0-7D31E54FE22E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth-Background-Service", "Auth-Background-Service\Auth-Background-Service.csproj", "{9CC8866E-6149-4384-92C0-7D31E54FE22E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth-Middleware", "Auth-Middleware\Auth-Middleware.csproj", "{C91814FB-A52A-49AC-B489-E0CE8D67990F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{9CC8866E-6149-4384-92C0-7D31E54FE22E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CC8866E-6149-4384-92C0-7D31E54FE22E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CC8866E-6149-4384-92C0-7D31E54FE22E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C91814FB-A52A-49AC-B489-E0CE8D67990F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C91814FB-A52A-49AC-B489-E0CE8D67990F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C91814FB-A52A-49AC-B489-E0CE8D67990F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C91814FB-A52A-49AC-B489-E0CE8D67990F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
