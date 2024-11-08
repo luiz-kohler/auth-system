@@ -3,6 +3,7 @@ using Auth_API.Infra;
 using Auth_API.Repositories;
 using Auth_API.Services;
 using Auth_Background_Service;
+using Auth_Middleware;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
 
 // handlers
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITokenHandler, Auth_API.Common.TokenHandler>();
 builder.Services.AddScoped<IHashHandler, HashHandler>();
 
@@ -62,6 +64,7 @@ app.UseCors(option => option
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 app.UseMiddleware<GlobalRoutePrefixMiddleware>($"/{builder.Configuration["Project"]}");
+//app.UseMiddleware<AuthMiddleware>();
 
 app.UsePathBase(new PathString($"/{builder.Configuration["Project"]}"));
 app.UseRouting();
