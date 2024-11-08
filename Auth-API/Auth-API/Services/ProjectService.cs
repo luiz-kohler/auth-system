@@ -257,7 +257,10 @@ namespace Auth_API.Services
             var project = await _projectRepository.GetSingle(p => p.Name == request.Name);
 
             if (project == null)
+            {
                 await Create(request);
+                return;
+            }
 
             var userId = GetUserIdByContext();
             var user = await _userRepository.GetSingle(u => u.Id == userId)

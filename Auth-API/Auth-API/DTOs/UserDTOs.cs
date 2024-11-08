@@ -39,7 +39,6 @@
 
     public class VerifyUserHasAccessRequest
     {
-        public int Id { get; set; }
         public int EndpointId { get; set; }
     }
 
