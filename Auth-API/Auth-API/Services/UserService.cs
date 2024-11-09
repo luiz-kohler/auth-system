@@ -2,6 +2,7 @@
 using Auth_API.DTOs;
 using Auth_API.Entities;
 using Auth_API.Exceptions;
+using Auth_API.Handlers;
 using Auth_API.Infra;
 using Auth_API.Repositories;
 using Auth_API.Validator;

@@ -1,4 +1,4 @@
-﻿namespace Auth_API.Common
+﻿namespace Auth_API.Middlewares
 {
     public class GlobalRoutePrefixMiddleware
     {

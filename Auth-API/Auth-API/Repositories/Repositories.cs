@@ -1,5 +1,4 @@
-﻿using Auth_API.Common;
-using Auth_API.Entities;
+﻿using Auth_API.Entities;
 using Auth_API.Infra;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;

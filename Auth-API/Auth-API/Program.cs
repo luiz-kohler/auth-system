@@ -1,5 +1,7 @@
 using Auth_API.Common;
+using Auth_API.Handlers;
 using Auth_API.Infra;
+using Auth_API.Middlewares;
 using Auth_API.Repositories;
 using Auth_API.Services;
 using Auth_Background_Service;
@@ -44,7 +46,7 @@ builder.Services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
 
 // handlers
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ITokenHandler, Auth_API.Common.TokenHandler>();
+builder.Services.AddScoped<ITokenHandler, TokenHandler>();
 builder.Services.AddScoped<IHashHandler, HashHandler>();
 
 builder.Services.AddExceptionHandler(options =>

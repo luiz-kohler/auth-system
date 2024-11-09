@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using System.Text.Json;
 
-namespace Auth_API.Common
+namespace Auth_API.Middlewares
 {
     public static class GlobalExceptionHandler
     {

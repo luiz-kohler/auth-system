@@ -1,8 +1,9 @@
-﻿using Auth_API.Infra;
+﻿using Auth_API.Common;
+using Auth_API.Infra;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace Auth_API.Common
+namespace Auth_API.Repositories
 {
     public class BaseEntityRepository<T> : IBaseEntityRepository<T>
             where T : class, IBaseEntity, new()

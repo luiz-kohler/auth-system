@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Auth_API.Common
+namespace Auth_API.Handlers
 {
     public class TokenHandler : ITokenHandler
     {
@@ -45,15 +45,15 @@ namespace Auth_API.Common
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateLifetime = true,
-                    ValidateIssuer = false, 
+                    ValidateIssuer = false,
                     ValidateAudience = false
                 }, out SecurityToken validatedToken);
 
-                return true; 
+                return true;
             }
             catch
             {
-                return false; 
+                return false;
             }
         }
 

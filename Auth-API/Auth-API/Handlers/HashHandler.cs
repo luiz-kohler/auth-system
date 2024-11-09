@@ -1,4 +1,4 @@
-﻿namespace Auth_API.Common
+﻿namespace Auth_API.Handlers
 {
     public class HashHandler : IHashHandler
     {
