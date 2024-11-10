@@ -33,30 +33,6 @@ namespace Auth_API.Handlers
             return tokenHandler.WriteToken(token);
         }
 
-        public bool Validate(string token)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["JwtKey"]);
-
-            try
-            {
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateLifetime = true,
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                }, out SecurityToken validatedToken);
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         public int ExtractUserId(string token)
         {
             if (string.IsNullOrEmpty(token))
@@ -78,7 +54,6 @@ namespace Auth_API.Handlers
     public interface ITokenHandler
     {
         string Generate(User user);
-        bool Validate(string token);
         int ExtractUserId(string token);
 
     }
