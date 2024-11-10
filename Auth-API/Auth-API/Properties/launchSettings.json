@@ -8,6 +8,7 @@
         "ASPNETCORE_ENVIRONMENT": "Local",
         "ConnectionStringMSSQL": "Server=localhost;Database=db;User Id=sa;Password=Admin@123;Trusted_Connection=False;TrustServerCertificate=True; MultipleActiveResultSets=true",
         "JWTKey": "iZvh55fBzMpwiyFwzcBFxzE8aUExGWEsusJhIGZmQdKdc0mvvv49Jfq3YCEjcbsG",
+        "EncryptKey": "0123456789abcdef",
         "HashSalt": "$2a$11$R0AbOp8b7glDg1Do9SbCRO",
         "Project": "auth-api",
         "AdminEmail": "teste_123@gmail.com",

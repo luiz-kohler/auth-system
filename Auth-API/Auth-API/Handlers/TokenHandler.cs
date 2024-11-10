@@ -9,10 +9,12 @@ namespace Auth_API.Handlers
     public class TokenHandler : ITokenHandler
     {
         private readonly IConfiguration _configuration;
+        private readonly IEncryptHandler _encryptHandler;
 
-        public TokenHandler(IConfiguration configuration)
+        public TokenHandler(IConfiguration configuration, IEncryptHandler encryptHandler)
         {
             _configuration = configuration;
+            _encryptHandler = encryptHandler;
         }
 
         public string Generate(User user)
@@ -23,7 +25,7 @@ namespace Auth_API.Handlers
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier,  _encryptHandler.Encrypt(user.Id.ToString())),
                 }),
                 Expires = DateTime.UtcNow.AddDays(999),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
@@ -43,11 +45,13 @@ namespace Auth_API.Handlers
                 throw new UnauthorizedAccessException("Invalid authorization token.");
 
             var jwtToken = handler.ReadJwtToken(token);
-            var nameIdentifierClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == TokenClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(nameIdentifierClaim))
+            var userIdEcrypted = jwtToken.Claims.FirstOrDefault(c => c.Type == TokenClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdEcrypted))
                 throw new UnauthorizedAccessException("User identifier claim is missing in the token.");
 
-            return int.Parse(nameIdentifierClaim);
+            var userIdDecrypted = _encryptHandler.Decrypt(userIdEcrypted);
+
+            return int.Parse(userIdDecrypted);
         }
     }
 

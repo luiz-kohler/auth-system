@@ -48,6 +48,7 @@ builder.Services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITokenHandler, TokenHandler>();
 builder.Services.AddScoped<IHashHandler, HashHandler>();
+builder.Services.AddScoped<IEncryptHandler, EncryptHandler>();
 
 builder.Services.AddExceptionHandler(options =>
 {
@@ -60,7 +61,7 @@ var app = builder.Build();
 app.UseCors(option => option
     .SetIsOriginAllowed(_ => true)
     .AllowAnyHeader()
-    .WithMethods("POST", "PUT", "DELETE", "GET")
+    .WithMethods("POST")
     .AllowCredentials()
 );
 
