@@ -53,8 +53,6 @@ namespace Auth_Middleware
             if (!ValidateToken(token))
                 throw new UnauthorizedAccessException("Invalid token");
 
-            var userId = ExtractUserId(token);
-
             var verifyUserHasAccessRequest = new VerifyUserHasAccessRequest
             {
                 EndpointId = endpoints.First().Id,
@@ -66,23 +64,6 @@ namespace Auth_Middleware
                 throw new UnauthorizedAccessException("User has not access to this endpoint");
 
             await _next(context);
-        }
-
-        private int ExtractUserId(string token)
-        {
-            if (string.IsNullOrEmpty(token))
-                throw new UnauthorizedAccessException("Authorization token is missing.");
-
-            var handler = new JwtSecurityTokenHandler();
-            if (!handler.CanReadToken(token))
-                throw new UnauthorizedAccessException("Invalid authorization token.");
-
-            var jwtToken = handler.ReadJwtToken(token);
-            var nameIdentifierClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == TokenClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(nameIdentifierClaim))
-                throw new UnauthorizedAccessException("User identifier claim is missing in the token.");
-
-            return int.Parse(nameIdentifierClaim);
         }
 
         private bool ValidateToken(string token)
@@ -107,11 +88,6 @@ namespace Auth_Middleware
             {
                 return false;
             }
-        }
-
-        private static class TokenClaimTypes
-        {
-            public static string NameIdentifier => "nameid";
         }
 
         private EHttpMethod MapMethodToEHTTPMethod(string method)
