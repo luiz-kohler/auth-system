@@ -120,4 +120,9 @@ namespace Auth_API.Repositories
     {
         public UserProjectRepository(Context context) : base(context) { }
     }
+
+    public class RefreshTokenRepository : BaseEntityRepository<RefreshToken>, IRefreshTokenRepository
+    {
+        public RefreshTokenRepository(Context context) : base(context) { }
+    }
 }
