@@ -59,7 +59,7 @@ namespace Auth_API.Handlers
             return int.Parse(userIdDecrypted);
         }
 
-        public bool Validate(string token)
+        public bool ValidateIgnoringLifeTime(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_key);
@@ -89,7 +89,7 @@ namespace Auth_API.Handlers
     public interface ITokenHandler
     {
         string Generate(User user);
-        bool Validate(string token);
+        bool ValidateIgnoringLifeTime(string token);
         int ExtractUserId(string token);
 
     }
