@@ -11,16 +11,19 @@ namespace Auth_API.Handlers
         private readonly IConfiguration _configuration;
         private readonly IEncryptHandler _encryptHandler;
 
+        private readonly string _key;
+
         public TokenHandler(IConfiguration configuration, IEncryptHandler encryptHandler)
         {
             _configuration = configuration;
             _encryptHandler = encryptHandler;
+            _key = _configuration["JwtKey"];
         }
 
         public string Generate(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["JwtKey"]);
+            var key = Encoding.UTF8.GetBytes(_key);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
@@ -59,7 +62,7 @@ namespace Auth_API.Handlers
         public bool Validate(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["JwtKey"]);
+            var key = Encoding.UTF8.GetBytes(_key);
 
             try
             {
