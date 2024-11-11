@@ -55,11 +55,38 @@ namespace Auth_API.Handlers
 
             return int.Parse(userIdDecrypted);
         }
+
+        public bool Validate(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["JwtKey"]);
+
+            try
+            {
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateLifetime = false,
+                    ValidateIssuer = true,
+                    ValidIssuer = "auth-api",
+                    ValidateAudience = false,
+                    RequireExpirationTime = false,
+                }, out SecurityToken validatedToken);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 
     public interface ITokenHandler
     {
         string Generate(User user);
+        bool Validate(string token);
         int ExtractUserId(string token);
 
     }
