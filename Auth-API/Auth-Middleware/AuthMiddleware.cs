@@ -81,6 +81,10 @@ namespace Auth_Middleware
                     ValidateIssuer = true,
                     ValidIssuer = "auth-api",
                     ValidateAudience = false,
+                    ActorValidationParameters = new TokenValidationParameters
+                    {
+                        ClockSkew = TimeSpan.Zero
+                    }
                 }, out SecurityToken validatedToken);
 
                 return true;
