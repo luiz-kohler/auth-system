@@ -67,7 +67,7 @@ app.UseCors(option => option
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 app.UseMiddleware<GlobalRoutePrefixMiddleware>($"/{builder.Configuration["Project"]}");
-//app.UseMiddleware<AuthMiddleware>();
+app.UseMiddleware<AuthMiddleware>();
 
 app.UsePathBase(new PathString($"/{builder.Configuration["Project"]}"));
 app.UseRouting();

@@ -29,6 +29,8 @@ namespace Auth_API.Handlers
                 }),
                 Expires = DateTime.UtcNow.AddDays(999),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                Issuer = _configuration["Project"],
+                IssuedAt = DateTime.UtcNow
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);

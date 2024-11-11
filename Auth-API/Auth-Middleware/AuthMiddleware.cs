@@ -78,8 +78,9 @@ namespace Auth_Middleware
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateLifetime = true,
-                    ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateIssuer = true,
+                    ValidIssuer = "auth-api",
+                    ValidateAudience = false,
                 }, out SecurityToken validatedToken);
 
                 return true;
