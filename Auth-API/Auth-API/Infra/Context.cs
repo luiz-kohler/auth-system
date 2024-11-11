@@ -13,6 +13,7 @@ namespace Auth_API.Infra
         public DbSet<RoleUser> RolesUsers { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<UserProject> UsersProjects { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public Context(DbContextOptions options) : base(options) { }
 
