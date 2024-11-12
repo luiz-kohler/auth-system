@@ -48,7 +48,13 @@
         public string Password { get; set; }
     }
 
-    public class GetUserTokenResposne
+    public class GetUserTokenResponse
+    {
+        public string Token { get; set; }
+        public string RefreshToken { get; set; }
+    }
+
+    public class RefreshTokenRequest
     {
         public string Token { get; set; }
         public string RefreshToken { get; set; }

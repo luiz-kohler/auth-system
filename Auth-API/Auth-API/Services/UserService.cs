@@ -42,7 +42,7 @@ namespace Auth_API.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<GetUserTokenResposne> Create(CreateUserRequest request)
+        public async Task<GetUserTokenResponse> Create(CreateUserRequest request)
         {
             var result = new CreateUserValidator().Validate(request);
 
@@ -68,7 +68,7 @@ namespace Auth_API.Services
             };
         }
 
-        public async Task<GetUserTokenResposne> Login(LoginRequest request)
+        public async Task<GetUserTokenResponse> Login(LoginRequest request)
         {
             var user = await _userRepository.GetSingle(user => user.Email == request.Email);
 
@@ -274,12 +274,23 @@ namespace Auth_API.Services
                 HasAccess = await _userRepository.UserHasAccess(userId, endpointId)
             };
         }
+
+        public async Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request)
+        {
+            var token = await _refreshTokenHandler.Refresh(request.Token, request.RefreshToken);
+
+            return new GetUserTokenResponse
+            {
+                Token = token,
+                RefreshToken = request.RefreshToken
+            };
+        }
     }
 
     public interface IUserService
     {
-        Task<GetUserTokenResposne> Create(CreateUserRequest request);
-        Task<GetUserTokenResposne> Login(LoginRequest request);
+        Task<GetUserTokenResponse> Create(CreateUserRequest request);
+        Task<GetUserTokenResponse> Login(LoginRequest request);
         Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
         Task Delete(int userId);
         Task AddToProjects(int userId, List<int> projectIds);
@@ -287,5 +298,6 @@ namespace Auth_API.Services
         Task AddToRoles(int userId, List<int> roleIds);
         Task RemoveFromRoles(int userId, List<int> roleIds);
         Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
+        Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request);
     }
 }

@@ -81,5 +81,13 @@ namespace Auth_API.Controllers
             var response = await _service.VerifyUserHasAccess(request.EndpointId);
             return Ok(response);
         }
+
+        [Public]
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            var response = await _service.RefreshToken(request);
+            return Ok(response);
+        }
     }
 }

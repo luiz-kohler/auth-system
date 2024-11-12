@@ -49,7 +49,14 @@ namespace Auth_API.Handlers
                 refreshTokenEntity.TokenHashed != refreshToken ||
                 refreshTokenEntity.TimesUsed > MAX_USED_TIMES ||
                 refreshTokenEntity.LastTimeUsed < DateTime.UtcNow.AddMonths(-6))
+            {
+                refreshTokenEntity.Valid = false;
+
+                await _refreshTokenRepository.Update(refreshTokenEntity);
+                await _refreshTokenRepository.Commit();
+
                 throw new UnauthorizedAccessException();
+            }
 
             refreshTokenEntity.LastTimeUsed = DateTime.UtcNow;
             refreshTokenEntity.TimesUsed++;
@@ -62,7 +69,11 @@ namespace Auth_API.Handlers
 
         public async Task<string> Generate(User user)
         {
-            var refreshToken = new RefreshToken
+            var oldRefreshToken = user.RefreshToken;
+            if(oldRefreshToken != null)
+                await _refreshTokenRepository.Delete(oldRefreshToken);
+
+            var newRefreshToken = new RefreshToken
             {
                 LastTimeUsed = DateTime.UtcNow,
                 TimesUsed = 0,
@@ -71,10 +82,10 @@ namespace Auth_API.Handlers
                 UserId = user.Id
             };
 
-            await _refreshTokenRepository.Add(refreshToken);
+            await _refreshTokenRepository.Add(newRefreshToken);
             await _refreshTokenRepository.Commit();
 
-            return refreshToken.TokenHashed;
+            return newRefreshToken.TokenHashed;
         }
     }
 
