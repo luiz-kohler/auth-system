@@ -23,7 +23,7 @@ namespace Auth_API.Handlers
             _tokenHandler = tokenHandler;
         }
 
-        public string Generate()
+        private string Generate()
         {
             var randomNumber = new byte[64];
 
@@ -40,51 +40,47 @@ namespace Auth_API.Handlers
             if (!_tokenHandler.ValidateIgnoringLifeTime(token))
                 throw new UnauthorizedAccessException();
 
-            var userId = _tokenHandler.ExtractUserId(token);
+            var refreshTokenEntity = await _refreshTokenRepository.GetSingle(x => x.TokenHashed == refreshToken);
 
-            var user = await _userRepository.GetSingle(user => user.Id == userId);
-
-            if (user == null)
+            if (refreshTokenEntity == null)
                 throw new UnauthorizedAccessException();
 
-            if (user.RefreshToken == null)
-            {
-                var newRefreshToken = new RefreshToken
-                {
-                    LastTimeUsed = DateTime.UtcNow,
-                    TimesUsed = 1,
-                    Valid = true,
-                    TokenHashed = Generate(),
-                    UserId = user.Id,
-                };
+            if (!refreshTokenEntity.Valid ||
+                refreshTokenEntity.TokenHashed != refreshToken ||
+                refreshTokenEntity.TimesUsed > MAX_USED_TIMES ||
+                refreshTokenEntity.LastTimeUsed < DateTime.UtcNow.AddMonths(-6))
+                throw new UnauthorizedAccessException();
 
-                user.RefreshToken = newRefreshToken;
+            refreshTokenEntity.LastTimeUsed = DateTime.UtcNow;
+            refreshTokenEntity.TimesUsed++;
 
-                await _refreshTokenRepository.Update(newRefreshToken);
-            }
-            else
-            {
-                if (!user.RefreshToken.Valid ||
-                    user.RefreshToken.TokenHashed != refreshToken ||
-                    user.RefreshToken.TimesUsed > MAX_USED_TIMES ||
-                    user.RefreshToken.LastTimeUsed < DateTime.UtcNow.AddMonths(-6))
-                    throw new UnauthorizedAccessException();
-
-                user.RefreshToken.LastTimeUsed = DateTime.UtcNow;
-                user.RefreshToken.TimesUsed++;
-
-                await _refreshTokenRepository.Update(user.RefreshToken);
-            }
-
+            await _refreshTokenRepository.Update(refreshTokenEntity);
             await _refreshTokenRepository.Commit();
 
-            return _tokenHandler.Generate(user);
+            return _tokenHandler.Generate(refreshTokenEntity.User);
+        }
+
+        public async Task<string> Generate(User user)
+        {
+            var refreshToken = new RefreshToken
+            {
+                LastTimeUsed = DateTime.UtcNow,
+                TimesUsed = 0,
+                TokenHashed = Generate(),
+                Valid = true,
+                UserId = user.Id
+            };
+
+            await _refreshTokenRepository.Add(refreshToken);
+            await _refreshTokenRepository.Commit();
+
+            return refreshToken.TokenHashed;
         }
     }
 
     public interface IRefreshTokenHandler
     {
-        string Generate();
+        Task<string> Generate(User user);
         Task<string> Refresh(string token, string refreshToken);
     }
 }

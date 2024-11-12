@@ -125,5 +125,12 @@ namespace Auth_API.Repositories
     public class RefreshTokenRepository : BaseEntityRepository<RefreshToken>, IRefreshTokenRepository
     {
         public RefreshTokenRepository(Context context) : base(context) { }
+
+        public override async Task<RefreshToken> GetSingle(Expression<Func<RefreshToken, bool>> predicate)
+        {
+            return await _context.Set<RefreshToken>()
+                 .Include(refreshToken => refreshToken.User)
+                 .FirstOrDefaultAsync(predicate);
+        }
     }
 }
