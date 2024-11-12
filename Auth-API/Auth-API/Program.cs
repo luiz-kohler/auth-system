@@ -50,6 +50,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITokenHandler, TokenHandler>();
 builder.Services.AddScoped<IHashHandler, HashHandler>();
 builder.Services.AddScoped<IEncryptHandler, EncryptHandler>();
+builder.Services.AddScoped<IRefreshTokenHandler, RefreshTokenHandler>();
 
 builder.Services.AddExceptionHandler(options =>
 {
