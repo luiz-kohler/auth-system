@@ -11,16 +11,17 @@ namespace Auth_API.Handlers
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IUserRepository _userRepository;
         private readonly ITokenHandler _tokenHandler;
-
-
+        private readonly IHashHandler _hashHandler;
         public RefreshTokenHandler(
             IRefreshTokenRepository refreshTokenRepository,
             IUserRepository userRepository,
-            ITokenHandler tokenHandler)
+            ITokenHandler tokenHandler,
+            IHashHandler hashHandler)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _userRepository = userRepository;
             _tokenHandler = tokenHandler;
+            _hashHandler = hashHandler;
         }
 
         private string Generate()
@@ -40,13 +41,14 @@ namespace Auth_API.Handlers
             if (!_tokenHandler.ValidateIgnoringLifeTime(token))
                 throw new UnauthorizedAccessException();
 
-            var refreshTokenEntity = await _refreshTokenRepository.GetSingle(x => x.TokenHashed == refreshToken);
+            var refreshTokenHashed = _hashHandler.Hash(refreshToken);
+            var refreshTokenEntity = await _refreshTokenRepository.GetSingle(x => x.TokenHashed == refreshTokenHashed);
 
             if (refreshTokenEntity == null)
                 throw new UnauthorizedAccessException();
 
             if (!refreshTokenEntity.Valid ||
-                refreshTokenEntity.TokenHashed != refreshToken ||
+                refreshTokenEntity.TokenHashed != refreshTokenHashed ||
                 refreshTokenEntity.TimesUsed > MAX_USED_TIMES ||
                 refreshTokenEntity.LastTimeUsed < DateTime.UtcNow.AddMonths(-6))
             {
@@ -73,11 +75,13 @@ namespace Auth_API.Handlers
             if(oldRefreshToken != null)
                 await _refreshTokenRepository.Delete(oldRefreshToken);
 
+            var token = Generate();
+
             var newRefreshToken = new RefreshToken
             {
                 LastTimeUsed = DateTime.UtcNow,
                 TimesUsed = 0,
-                TokenHashed = Generate(),
+                TokenHashed = _hashHandler.Hash(token),
                 Valid = true,
                 UserId = user.Id
             };
@@ -85,7 +89,7 @@ namespace Auth_API.Handlers
             await _refreshTokenRepository.Add(newRefreshToken);
             await _refreshTokenRepository.Commit();
 
-            return newRefreshToken.TokenHashed;
+            return token;
         }
     }
 
