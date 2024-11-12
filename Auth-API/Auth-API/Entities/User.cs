@@ -9,7 +9,7 @@ namespace Auth_API.Entities
         public string Email { get; set; }
         public string Password { get; set; }
         public int? RefreshTokenId { get; set; }
-        public virtual RefreshToken RefreshToken { get; set; }
+        public virtual RefreshToken? RefreshToken { get; set; }
         public virtual IReadOnlyCollection<RoleUser> RoleUsers { get; set; }
         public virtual IReadOnlyCollection<UserProject> UserProjects { get; set; }
     }

@@ -22,6 +22,11 @@ namespace Auth_API.Infra
             foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
                 relationship.DeleteBehavior = DeleteBehavior.NoAction;
 
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(refreshToken => refreshToken.User)
+                .WithOne(user => user.RefreshToken)
+                .HasForeignKey<RefreshToken>(refreshToken => refreshToken.UserId);
+
             modelBuilder.Entity<RoleEndpoint>()
                 .HasKey(re => new { re.RoleId, re.EndpointId });
 
