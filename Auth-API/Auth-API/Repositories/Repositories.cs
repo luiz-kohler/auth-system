@@ -106,6 +106,7 @@ namespace Auth_API.Repositories
         public override async Task<User> GetSingle(Expression<Func<User, bool>> predicate)
         {
             return await _context.Set<User>()
+                .Include(user => user.RefreshToken)
                 .Include(user => user.UserProjects)
                     .ThenInclude(userProject => userProject.Project)
                         .ThenInclude(project => project.Roles)
