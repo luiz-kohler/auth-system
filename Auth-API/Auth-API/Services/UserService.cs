@@ -3,10 +3,8 @@ using Auth_API.DTOs;
 using Auth_API.Entities;
 using Auth_API.Exceptions;
 using Auth_API.Handlers;
-using Auth_API.Infra;
 using Auth_API.Repositories;
 using Auth_API.Validator;
-using System.Linq;
 
 namespace Auth_API.Services
 {
@@ -19,6 +17,7 @@ namespace Auth_API.Services
         private readonly IRoleUserRepository _roleUserRepository;
         private readonly ITokenHandler _tokenHandler;
         private readonly IHashHandler _hashHandler;
+        private readonly IRefreshTokenHandler _refreshTokenHandler;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
@@ -29,6 +28,7 @@ namespace Auth_API.Services
             IRoleUserRepository roleUserRepository,
             ITokenHandler tokenHandler,
             IHashHandler hashHandler,
+            IRefreshTokenHandler refreshTokenHandler,
             IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
@@ -38,6 +38,7 @@ namespace Auth_API.Services
             _roleUserRepository = roleUserRepository;
             _tokenHandler = tokenHandler;
             _hashHandler = hashHandler;
+            _refreshTokenHandler = refreshTokenHandler;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -60,7 +61,11 @@ namespace Auth_API.Services
             await _userRepository.Add(user);
             await _userRepository.Commit();
 
-            return new() { Token = _tokenHandler.Generate(user) };
+            return new()
+            {
+                Token = _tokenHandler.Generate(user),
+                RefreshToken = await _refreshTokenHandler.Generate(user)
+            };
         }
 
         public async Task<GetUserTokenResposne> Login(LoginRequest request)
@@ -70,7 +75,11 @@ namespace Auth_API.Services
             if (user == null || !_hashHandler.Verify(request.Password, user.Password))
                 throw new BadRequestException("Incorrect credentials");
 
-            return new() { Token = _tokenHandler.Generate(user) };
+            return new()
+            {
+                Token = _tokenHandler.Generate(user),
+                RefreshToken = await _refreshTokenHandler.Generate(user)
+            };
         }
 
         public async Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request)
@@ -104,10 +113,10 @@ namespace Auth_API.Services
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
 
-            if(user == null)
+            if (user == null)
                 throw new BadRequestException("User not found");
 
-            if(user.UserProjects.Any() || user.RoleUsers.Any())
+            if (user.UserProjects.Any() || user.RoleUsers.Any())
                 throw new BadRequestException("You must remove this users from all roles and project");
 
             await _userRepository.Delete(user);
@@ -134,7 +143,7 @@ namespace Auth_API.Services
 
             var projects = await _projectRepository.GetAll(project => projectIds.Contains(project.Id));
 
-            if(projectIds.Count != projects.Count())
+            if (projectIds.Count != projects.Count())
                 throw new BadRequestException($"Some informed projects was not found");
 
             var newUserProjects = projects.Select(project => new UserProject { User = user, Project = project });
@@ -170,10 +179,10 @@ namespace Auth_API.Services
             if (projectsWithSingleAdmin.Any())
                 throw new BadRequestException("User is the only admin in some projects and can not be removed");
 
-            var userProjectsIdsToRemove = userProjectsToRemove.Select(userProject =>  userProject.ProjectId).ToList();
+            var userProjectsIdsToRemove = userProjectsToRemove.Select(userProject => userProject.ProjectId).ToList();
 
             await _userProjectRepository
-                .DeleteWhere(userProject => userProject.UserId == userId 
+                .DeleteWhere(userProject => userProject.UserId == userId
                                          && userProjectsIdsToRemove.Contains(userProject.ProjectId));
 
             await _roleUserRepository.DeleteWhere(roleUser => roleUser.UserId == userId && distinctProjectIds.Contains(roleUser.Role.ProjectId));
@@ -257,7 +266,7 @@ namespace Auth_API.Services
 
         public async Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId)
         {
-            var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last(); 
+            var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
             var userId = _tokenHandler.ExtractUserId(token);
 
             return new VerifyUserHasAccessResponse
