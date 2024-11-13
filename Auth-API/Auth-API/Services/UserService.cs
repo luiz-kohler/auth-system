@@ -122,7 +122,6 @@ namespace Auth_API.Services
             await _userRepository.Commit();
         }
 
-
         // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task AddToProjects(int userId, List<int> projectIds)
         {
