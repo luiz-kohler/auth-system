@@ -6,6 +6,8 @@ namespace Auth_API.Entities
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public int OrganizationId { get; set; }
+        public virtual Organization Organization { get; set; }
         public virtual IReadOnlyCollection<Role> Roles { get; set; }
         public virtual IReadOnlyCollection<Endpoint> Endpoints { get; set; }
         public virtual IReadOnlyCollection<UserProject> UserProjects { get; set; }

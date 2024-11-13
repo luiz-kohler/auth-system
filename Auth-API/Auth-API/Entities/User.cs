@@ -10,6 +10,9 @@ namespace Auth_API.Entities
         public string Password { get; set; }
         public int? RefreshTokenId { get; set; }
         public virtual RefreshToken? RefreshToken { get; set; }
+        public int? OrganizationId { get; set; }
+        public virtual Organization? Organization { get; set; }
+        public bool? IsUserOrganizationAdmin { get; set; }
         public virtual IReadOnlyCollection<RoleUser> RoleUsers { get; set; }
         public virtual IReadOnlyCollection<UserProject> UserProjects { get; set; }
     }
