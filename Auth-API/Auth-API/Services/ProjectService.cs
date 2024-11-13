@@ -20,7 +20,7 @@ namespace Auth_API.Services
         private readonly IRoleRepository _roleRepository;
         private readonly IRoleUserRepository _roleUserRepository;
         private readonly IRoleEndpointRepository _roleEndpointRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenHandler _tokenHandler;
 
         public ProjectService(
             IUserRepository userRepository,
@@ -30,7 +30,7 @@ namespace Auth_API.Services
             IRoleRepository roleRepository,
             IRoleUserRepository roleUserRepository,
             IRoleEndpointRepository roleEndpointRepository,
-            IHttpContextAccessor httpContextAccessor)
+            ITokenHandler tokenHandler)
         {
             _userRepository = userRepository;
             _projectRepository = projectRepository;
@@ -39,14 +39,14 @@ namespace Auth_API.Services
             _roleRepository = roleRepository;
             _roleUserRepository = roleUserRepository;
             _roleEndpointRepository = roleEndpointRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _tokenHandler = tokenHandler;
         }
 
         public async Task Create(CreateProjectRequest request)
         {
             ValidateRequest(request);
 
-            var adminId = GetUserIdByContext();
+            var adminId = _tokenHandler.ExtractUserIdFromCurrentSession();
             var admin = await GetAdminById(adminId);
 
             var project = await CreateProject(request);
@@ -60,18 +60,6 @@ namespace Auth_API.Services
             await AssignAdminRoleToProjectEndpoints(adminRole, endpoints);
 
             await _projectRepository.Commit();
-        }
-
-        private int GetUserIdByContext()
-        {
-            var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-            var handler = new JwtSecurityTokenHandler();
-
-            var jwtToken = handler.ReadJwtToken(token);
-            var userId = jwtToken.Claims.First(c => c.Type == TokenClaimTypes.NameIdentifier)?.Value;
-
-            return Convert.ToInt32(userId);
         }
 
         private void ValidateRequest(CreateProjectRequest request)
@@ -263,13 +251,13 @@ namespace Auth_API.Services
                 return;
             }
 
-            var userId = GetUserIdByContext();
-            var user = await _userRepository.GetSingle(u => u.Id == userId)
+            var adminId = _tokenHandler.ExtractUserIdFromCurrentSession();
+            var admin = await _userRepository.GetSingle(u => u.Id == adminId)
                        ?? throw new BadRequestException("User not found");
 
             var adminRole = GetAdminRole(project);
 
-            if (!IsUserAuthorizedToUpsert(project, userId, adminRole.Id))
+            if (!IsUserAuthorizedToUpsert(project, admin.Id, adminRole.Id))
                 throw new BadRequestException("You do not have authorization to upsert this project");
 
             await UpdateProjectEndpoints(project, request, adminRole);

@@ -18,7 +18,6 @@ namespace Auth_API.Services
         private readonly ITokenHandler _tokenHandler;
         private readonly IHashHandler _hashHandler;
         private readonly IRefreshTokenHandler _refreshTokenHandler;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUserRepository userRepository,
@@ -28,8 +27,7 @@ namespace Auth_API.Services
             IRoleUserRepository roleUserRepository,
             ITokenHandler tokenHandler,
             IHashHandler hashHandler,
-            IRefreshTokenHandler refreshTokenHandler,
-            IHttpContextAccessor httpContextAccessor)
+            IRefreshTokenHandler refreshTokenHandler)
         {
             _userRepository = userRepository;
             _projectRepository = projectRepository;
@@ -39,7 +37,6 @@ namespace Auth_API.Services
             _tokenHandler = tokenHandler;
             _hashHandler = hashHandler;
             _refreshTokenHandler = refreshTokenHandler;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<GetUserTokenResponse> Create(CreateUserRequest request)
@@ -266,8 +263,7 @@ namespace Auth_API.Services
 
         public async Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId)
         {
-            var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            var userId = _tokenHandler.ExtractUserId(token);
+            var userId = _tokenHandler.ExtractUserIdFromCurrentSession();
 
             return new VerifyUserHasAccessResponse
             {
