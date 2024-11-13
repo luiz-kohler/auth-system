@@ -1,6 +1,8 @@
-﻿namespace Auth_API.Entities
+﻿using Auth_API.Common;
+
+namespace Auth_API.Entities
 {
-    public class Organization
+    public class Organization : IBaseEntity
     {
         public int Id { get; set; }
         public string Name { get; set; }
