@@ -35,7 +35,7 @@ namespace Auth_API.Handlers
                 {
                     new Claim(ClaimTypes.NameIdentifier,  _encryptHandler.Encrypt(user.Id.ToString())),
                 }),
-                Expires = DateTime.UtcNow.AddDays(999),
+                Expires = DateTime.UtcNow.AddHours(9),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _configuration["Project"],
                 IssuedAt = DateTime.UtcNow
