@@ -79,6 +79,7 @@ namespace Auth_API.Services
             };
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request)
         {
             var users = await _userRepository.GetAll(user =>
@@ -106,6 +107,7 @@ namespace Auth_API.Services
             });
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task Delete(int userId)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
@@ -120,6 +122,8 @@ namespace Auth_API.Services
             await _userRepository.Commit();
         }
 
+
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task AddToProjects(int userId, List<int> projectIds)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
@@ -149,6 +153,7 @@ namespace Auth_API.Services
             await _userProjectRepository.Commit();
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task RemoveFromProjects(int userId, List<int> projectIds)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
@@ -187,6 +192,7 @@ namespace Auth_API.Services
             await _userProjectRepository.Commit();
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task AddToRoles(int userId, List<int> roleIds)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
@@ -226,6 +232,7 @@ namespace Auth_API.Services
             await _roleUserRepository.Commit();
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task RemoveFromRoles(int userId, List<int> roleIds)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
@@ -261,6 +268,7 @@ namespace Auth_API.Services
             await _roleUserRepository.Commit();
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId)
         {
             var userId = _tokenHandler.ExtractUserIdFromCurrentSession();
@@ -271,6 +279,7 @@ namespace Auth_API.Services
             };
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request)
         {
             var token = await _refreshTokenHandler.Refresh(request.Token, request.RefreshToken);

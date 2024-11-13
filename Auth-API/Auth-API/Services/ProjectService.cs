@@ -166,6 +166,7 @@ namespace Auth_API.Services
             });
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<GetProjectByIdResponse> Get(int id)
         {
             var project = await _projectRepository.GetSingle(project => project.Id == id);
@@ -197,7 +198,8 @@ namespace Auth_API.Services
                 })
             };
         }
-
+        
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task Delete(int id)
         {
             var project = await _projectRepository.GetSingle(project => project.Id == id);
@@ -257,7 +259,7 @@ namespace Auth_API.Services
 
             var adminRole = GetAdminRole(project);
 
-            if (!IsUserAuthorizedToUpsert(project, admin.Id, adminRole.Id))
+            if (!IsUserAuthorizedToThisProject(project, admin.Id, adminRole.Id))
                 throw new BadRequestException("You do not have authorization to upsert this project");
 
             await UpdateProjectEndpoints(project, request, adminRole);
@@ -326,7 +328,7 @@ namespace Auth_API.Services
             await _roleEndpointRepository.Add(roleEndpoints);
         }
 
-        private bool IsUserAuthorizedToUpsert(Project project, int userId, int adminRoleId)
+        private bool IsUserAuthorizedToThisProject(Project project, int userId, int adminRoleId)
         {
             return project.UserProjects
                 .Select(up => up.User)

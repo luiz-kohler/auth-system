@@ -28,6 +28,7 @@ namespace Auth_API.Services
             _roleEndpointRepository = roleEndpointRepository;
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task Create(List<CreateEndpointRequest> request, int projectId)
         {
             ValidateRequests(request);
@@ -107,6 +108,7 @@ namespace Auth_API.Services
             });
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task Delete(List<int> ids)
         {
             if(ids.Count != ids.Distinct().Count())
@@ -128,6 +130,7 @@ namespace Auth_API.Services
             await _endpointRepository.Delete(endpoints);
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<IEnumerable<EndpointResponse>> GetMany(GetManyEndpointRequest request)
         {
             var endpoints = await _endpointRepository.GetAll(endpoint =>

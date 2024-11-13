@@ -33,6 +33,7 @@ namespace Auth_API.Services
             _endpointRepository = endpointRepository;
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task Create(CreateRoleRequest request)
         {
             if (string.IsNullOrWhiteSpace(request?.Name))
@@ -56,6 +57,7 @@ namespace Auth_API.Services
             await _roleRepository.Commit();
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task Delete(List<int> ids)
         {
             if (ids.Count != ids.Distinct().Count())
@@ -81,6 +83,7 @@ namespace Auth_API.Services
             await _roleRepository.Delete(roles);
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task AddEndpoints(int id, List<int> endpointIds)
         {
             if(endpointIds.Count == 0)
@@ -116,6 +119,7 @@ namespace Auth_API.Services
             await _roleRepository.Commit();
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task RemoveEndpoints(int id, List<int> endpointIds)
         {
             if (endpointIds.Count == 0)
@@ -146,6 +150,7 @@ namespace Auth_API.Services
             await _roleEndpointRepository.Delete(roleEndpoints);
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<IEnumerable<RoleResponse>> GetMany(GetManyRolesRequest request)
         {
             var roles = await _roleRepository.GetAll(role =>
@@ -167,6 +172,7 @@ namespace Auth_API.Services
             });
         }
 
+        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<RoleWithRelationsResponse> Get(int id)
         {
             var role = await _roleRepository.GetSingle(role => role.Id == id);
