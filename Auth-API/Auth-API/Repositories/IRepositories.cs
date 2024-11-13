@@ -16,4 +16,5 @@ namespace Auth_API.Repositories
         Task<bool> UserHasAccess(int userId, int endpointId);
         Task<bool> IsUserAdmin(int userId, int projectId);
     }
+    public interface IOrganizationRepository : IBaseEntityRepository<Organization> { }
 }

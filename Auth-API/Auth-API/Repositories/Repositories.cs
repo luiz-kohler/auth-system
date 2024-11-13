@@ -142,4 +142,9 @@ namespace Auth_API.Repositories
                  .FirstOrDefaultAsync(predicate);
         }
     }
+
+    public class OrganizationRepository : BaseEntityRepository<Organization>, IOrganizationRepository
+    {
+        public OrganizationRepository(Context context) : base(context) { }
+    }
 }
