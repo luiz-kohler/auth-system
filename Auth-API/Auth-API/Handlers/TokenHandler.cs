@@ -10,13 +10,18 @@ namespace Auth_API.Handlers
     {
         private readonly IConfiguration _configuration;
         private readonly IEncryptHandler _encryptHandler;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         private readonly string _key;
 
-        public TokenHandler(IConfiguration configuration, IEncryptHandler encryptHandler)
+        public TokenHandler(
+            IConfiguration configuration, 
+            IEncryptHandler encryptHandler,
+            IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
             _encryptHandler = encryptHandler;
+            _httpContextAccessor = httpContextAccessor;
             _key = _configuration["JwtKey"];
         }
 
@@ -84,6 +89,12 @@ namespace Auth_API.Handlers
                 return false;
             }
         }
+
+        public int ExtractUserIdFromCurrentSession()
+        {
+            var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            return ExtractUserId(token);
+        }
     }
 
     public interface ITokenHandler
@@ -91,7 +102,7 @@ namespace Auth_API.Handlers
         string Generate(User user);
         bool ValidateIgnoringLifeTime(string token);
         int ExtractUserId(string token);
-
+        int ExtractUserIdFromCurrentSession();
     }
 
     public static class TokenClaimTypes
