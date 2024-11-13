@@ -1,7 +1,7 @@
-﻿using Auth_API.Entities;
+﻿using Auth_API.Common;
+using Auth_API.Entities;
 using Auth_API.Infra;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System.Linq.Expressions;
 using Endpoint = Auth_API.Entities.Endpoint;
 
@@ -85,7 +85,7 @@ namespace Auth_API.Repositories
                 .Where(roleEndpoint => roleEndpoint.EndpointId == endpointId)
                 .ToListAsync();
 
-            if(!rolesWithAccess.Any())
+            if (!rolesWithAccess.Any())
                 return false;
 
             return await _context
@@ -114,6 +114,15 @@ namespace Auth_API.Repositories
                 .Include(user => user.RoleUsers)
                     .ThenInclude(userRole => userRole.Role)
                 .FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<bool> IsUserAdmin(int userId, int projectId)
+        {
+            return await _context.Set<RoleUser>()
+                .AnyAsync(ru =>
+                    ru.UserId == userId &&
+                    ru.Role.ProjectId == projectId &&
+                    ru.Role.Name == EDefaultRole.Admin.GetDescription());
         }
     }
 
