@@ -289,6 +289,12 @@ namespace Auth_API.Services
                 RefreshToken = request.RefreshToken
             };
         }
+
+        public async Task<User> ExtractUserFromCurrentSession()
+        {
+            var userId = _tokenHandler.ExtractUserIdFromCurrentSession();
+            return await _userRepository.GetSingle(user => user.Id == userId);
+        }
     }
 
     public interface IUserService
@@ -303,5 +309,6 @@ namespace Auth_API.Services
         Task RemoveFromRoles(int userId, List<int> roleIds);
         Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
         Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request);
+        Task<User> ExtractUserFromCurrentSession();
     }
 }
