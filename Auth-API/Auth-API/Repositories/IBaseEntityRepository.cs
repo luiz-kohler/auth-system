@@ -1,4 +1,6 @@
-﻿using System.Linq.Expressions;
+﻿using Auth_API.Entities;
+using Microsoft.EntityFrameworkCore.Query;
+using System.Linq.Expressions;
 
 namespace Auth_API.Common
 {
@@ -14,6 +16,8 @@ namespace Auth_API.Common
         Task Add(T entity);
         Task Add(IEnumerable<T> entities);
         Task Update(T entity);
+        Task UpdateMany(Expression<Func<T, bool>> predicate,
+                   Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>> setPropertyCalls);  
         Task Delete(T entity);
         Task Delete(IEnumerable<T> entities);
         Task DeleteWhere(Expression<Func<T, bool>> predicate);

@@ -1,6 +1,8 @@
 ﻿using Auth_API.Common;
+using Auth_API.Entities;
 using Auth_API.Infra;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace Auth_API.Repositories
@@ -93,6 +95,14 @@ namespace Auth_API.Repositories
         {
             _context.Set<T>().Update(entity);
             await Commit();
+        }
+
+        public async Task UpdateMany(Expression<Func<T, bool>> predicate,
+            Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>> setPropertyCalls)
+        {
+            await _context.Set<T>()
+                .Where(predicate)
+                .ExecuteUpdateAsync(setPropertyCalls);
         }
     }
 }
