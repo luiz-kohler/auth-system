@@ -2,6 +2,7 @@
 using Auth_API.Entities;
 using Auth_API.Infra;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 using Endpoint = Auth_API.Entities.Endpoint;
 
@@ -107,6 +108,7 @@ namespace Auth_API.Repositories
         {
             return await _context.Set<User>()
                 .Include(user => user.RefreshToken)
+                .Include(user => user.Organization)
                 .Include(user => user.UserProjects)
                     .ThenInclude(userProject => userProject.Project)
                         .ThenInclude(project => project.Roles)
