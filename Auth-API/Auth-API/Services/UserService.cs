@@ -295,6 +295,37 @@ namespace Auth_API.Services
             var userId = _tokenHandler.ExtractUserIdFromCurrentSession();
             return await _userRepository.GetSingle(user => user.Id == userId);
         }
+
+        public async Task VerifyUserIsProjectAdmin(int projectId)
+        {
+            var user = await ExtractOrganizationUserOrThrow();
+            if (!user.RoleUsers.Any(ru => ru.Role.ProjectId == projectId &&
+                                          ru.Role.Name == EDefaultRole.Admin.GetDescription()))
+                throw new UnauthorizedAccessException("User is not an admin for the specified project.");
+        }
+
+        public async Task VerifyUserIsOrganizationAdmin(int organizationId)
+        {
+            var user = await ExtractOrganizationUserOrThrow();
+
+            if (user.OrganizationId != organizationId)
+                throw new UnauthorizedAccessException("User is not part of the specified organization.");
+
+            if (user.IsUserOrganizationAdmin != true)
+                throw new UnauthorizedAccessException("User is not an admin for the specified organization.");
+        }
+
+        private async Task<User> ExtractOrganizationUserOrThrow()
+        {
+            var user = await ExtractUserFromCurrentSession();
+            if (user == null)
+                throw new UnauthorizedAccessException("User is not authenticated.");
+
+            if (!user.OrganizationId.HasValue)
+                throw new UnauthorizedAccessException("User is not associated with any organization.");
+
+            return user;
+        }
     }
 
     public interface IUserService
@@ -310,5 +341,7 @@ namespace Auth_API.Services
         Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
         Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request);
         Task<User> ExtractUserFromCurrentSession();
+        Task VerifyUserIsProjectAdmin(int projectId);
+        Task VerifyUserIsOrganizationAdmin(int organizationId);
     }
 }

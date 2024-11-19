@@ -115,6 +115,7 @@ namespace Auth_API.Repositories
                             .ThenInclude(role => role.RoleUsers)
                 .Include(user => user.RoleUsers)
                     .ThenInclude(userRole => userRole.Role)
+                        .ThenInclude(role => role.Project)
                 .FirstOrDefaultAsync(predicate);
         }
 
