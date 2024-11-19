@@ -123,7 +123,7 @@ namespace Auth_API.Services
         }
 
         // TODO: CHECK USER HAS PERMISSION TO DO THIS
-        public async Task AddToProjects(int userId, List<int> projectIds)
+        public async Task LinkToProjects(int userId, List<int> projectIds)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
 
@@ -153,7 +153,7 @@ namespace Auth_API.Services
         }
 
         // TODO: CHECK USER HAS PERMISSION TO DO THIS
-        public async Task RemoveFromProjects(int userId, List<int> projectIds)
+        public async Task UnlinkFromProjects(int userId, List<int> projectIds)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
 
@@ -192,7 +192,7 @@ namespace Auth_API.Services
         }
 
         // TODO: CHECK USER HAS PERMISSION TO DO THIS
-        public async Task AddToRoles(int userId, List<int> roleIds)
+        public async Task LinkToRoles(int userId, List<int> roleIds)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
 
@@ -232,7 +232,7 @@ namespace Auth_API.Services
         }
 
         // TODO: CHECK USER HAS PERMISSION TO DO THIS
-        public async Task RemoveFromRoles(int userId, List<int> roleIds)
+        public async Task UnlinkFromRoles(int userId, List<int> roleIds)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
 
@@ -334,10 +334,10 @@ namespace Auth_API.Services
         Task<GetUserTokenResponse> Login(LoginRequest request);
         Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
         Task Delete(int userId);
-        Task AddToProjects(int userId, List<int> projectIds);
-        Task RemoveFromProjects(int userId, List<int> projectIds);
-        Task AddToRoles(int userId, List<int> roleIds);
-        Task RemoveFromRoles(int userId, List<int> roleIds);
+        Task LinkToProjects(int userId, List<int> projectIds);
+        Task UnlinkFromProjects(int userId, List<int> projectIds);
+        Task LinkToRoles(int userId, List<int> roleIds);
+        Task UnlinkFromRoles(int userId, List<int> roleIds);
         Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
         Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request);
         Task<User> ExtractUserFromCurrentSession();

@@ -49,28 +49,28 @@ namespace Auth_API.Controllers
         [HttpPost("link-to-project")]
         public async Task<IActionResult> AddToProjects([FromBody] LinkToProjectsRequest request)
         {
-            await _service.AddToProjects(request.Id, request.ProjectIds);
+            await _service.LinkToProjects(request.Id, request.ProjectIds);
             return Ok();
         }
 
         [HttpPost("unlink-from-project")]
         public async Task<IActionResult> RemoveFromProjects([FromBody] UnlinkFromProjectsRequest request)
         {
-            await _service.RemoveFromProjects(request.Id, request.ProjectIds);
+            await _service.UnlinkFromProjects(request.Id, request.ProjectIds);
             return Ok();
         }
 
         [HttpPost("link-to-roles")]
         public async Task<IActionResult> AddToRoles([FromBody] LinkToRolesRequest request)
         {
-            await _service.AddToRoles(request.Id, request.RoleIds);
+            await _service.LinkToRoles(request.Id, request.RoleIds);
             return Ok();
         }
 
         [HttpPost("unlink-from-roles")]
         public async Task<IActionResult> RemoveFromRoles([FromBody] UnlinkFromRolesRequest request)
         {
-            await _service.RemoveFromRoles(request.Id, request.RoleIds);
+            await _service.UnlinkFromRoles(request.Id, request.RoleIds);
             return Ok();
         }
 
