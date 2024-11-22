@@ -39,7 +39,7 @@ namespace Auth_API.Controllers
             return Ok(users);
         }
 
-        [HttpPost("delete-one")]
+        [HttpPost("delete")]
         public async Task<IActionResult> Delete([FromBody] DeleteUserRequest request)
         {
             await _service.Delete(request.Id);
@@ -57,20 +57,6 @@ namespace Auth_API.Controllers
         public async Task<IActionResult> RemoveFromProjects([FromBody] UnlinkFromProjectsRequest request)
         {
             await _service.UnlinkFromProjects(request.Id, request.ProjectIds);
-            return Ok();
-        }
-
-        [HttpPost("link-to-roles")]
-        public async Task<IActionResult> AddToRoles([FromBody] LinkToRolesRequest request)
-        {
-            await _service.LinkToRoles(request.Id, request.RoleIds);
-            return Ok();
-        }
-
-        [HttpPost("unlink-from-roles")]
-        public async Task<IActionResult> RemoveFromRoles([FromBody] UnlinkFromRolesRequest request)
-        {
-            await _service.UnlinkFromRoles(request.Id, request.RoleIds);
             return Ok();
         }
 

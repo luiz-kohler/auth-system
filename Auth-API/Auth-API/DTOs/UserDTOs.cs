@@ -24,19 +24,6 @@
         public List<int> ProjectIds { get; set; }
     }
 
-
-    public class LinkToRolesRequest
-    {
-        public int Id { get; set; }
-        public List<int> RoleIds { get; set; }
-    }
-
-    public class UnlinkFromRolesRequest
-    {
-        public int Id { get; set; }
-        public List<int> RoleIds { get; set; }
-    }
-
     public class VerifyUserHasAccessRequest
     {
         public int EndpointId { get; set; }

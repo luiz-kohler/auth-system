@@ -3,11 +3,7 @@ using Auth_API.DTOs;
 using Auth_API.Entities;
 using Auth_API.Exceptions;
 using Auth_API.Repositories;
-using Auth_API.Validator;
-using Azure.Core;
 using System.Data;
-using System.Linq;
-using System.Net;
 
 namespace Auth_API.Services
 {
@@ -18,19 +14,22 @@ namespace Auth_API.Services
         private readonly IRoleUserRepository _roleUserRepository;
         private readonly IRoleEndpointRepository _roleEndpointRepository;
         private readonly IEndpointRepository _endpointRepository;
+        private readonly IUserRepository _userRepository;
 
         public RoleService(
             IProjectRepository projectRepository,
             IRoleRepository roleRepository,
             IRoleUserRepository roleUserRepository,
             IRoleEndpointRepository roleEndpointRepository,
-            IEndpointRepository endpointRepository)
+            IEndpointRepository endpointRepository,
+            IUserRepository userRepository)
         {
             _projectRepository = projectRepository;
             _roleRepository = roleRepository;
             _roleUserRepository = roleUserRepository;
             _roleEndpointRepository = roleEndpointRepository;
             _endpointRepository = endpointRepository;
+            _userRepository = userRepository;
         }
 
         // TODO: CHECK USER HAS PERMISSION TO DO THIS
@@ -40,11 +39,11 @@ namespace Auth_API.Services
                 throw new BadRequestException("You must inform a valid name");
 
             var project = await _projectRepository.GetSingle(project => project.Id == request.ProjectId);
-            if(project == null)
+            if (project == null)
                 throw new BadRequestException("Project not found");
 
             var isThereRoleWithSameName = project.Roles.Any(role => role.Name == request.Name);
-            if(isThereRoleWithSameName)
+            if (isThereRoleWithSameName)
                 throw new BadRequestException("There is already a role with the same name in this project");
 
             var role = new Role
@@ -86,7 +85,7 @@ namespace Auth_API.Services
         // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task AddEndpoints(int id, List<int> endpointIds)
         {
-            if(endpointIds.Count == 0)
+            if (endpointIds.Count == 0)
                 throw new BadRequestException("You must inform any endpoint");
 
             if (endpointIds.Count != endpointIds.Distinct().Count())
@@ -99,13 +98,13 @@ namespace Auth_API.Services
 
             var role = await _roleRepository.GetSingle(role => role.Id == id);
 
-            if(role == null)
+            if (role == null)
                 throw new BadRequestException("Roles was not found");
 
             if (endpoints.Any(endpoint => endpoint.ProjectId != role.ProjectId))
                 throw new BadRequestException($"All endpoint must be from the project: {role.Project.Name}");
 
-            if (role.RoleEndpoints?.Count > 0 && 
+            if (role.RoleEndpoints?.Count > 0 &&
                 role.RoleEndpoints.Any(roleEndpoint => endpointIds.Contains(roleEndpoint.EndpointId) && roleEndpoint.RoleId == role.Id))
                 throw new BadRequestException("Some endpoint is already linked to this role");
 
@@ -138,7 +137,7 @@ namespace Auth_API.Services
             if (role == null)
                 throw new BadRequestException("Roles was not found");
 
-            if(role.Name == EDefaultRole.Admin.GetDescription())
+            if (role.Name == EDefaultRole.Admin.GetDescription())
                 throw new BadRequestException("You can not update the admin role");
 
             var roleEndpoints = role.RoleEndpoints.Where(roleEndpoint => endpointIds.Contains(roleEndpoint.EndpointId));
@@ -198,11 +197,95 @@ namespace Auth_API.Services
                 }) ?? new List<EndpointForRoleResponse>(),
                 Users = role.RoleUsers.Select(ru => ru.User).Select(user => new UserForRoleResponse
                 {
-                    Id= user.Id,
+                    Id = user.Id,
                     Email = user.Email,
                     Name = user.Name,
                 })
             };
+        }
+
+        public async Task LinkUsers(List<int> userIds, List<int> roleIds)
+        {
+            var roles = await GetRoles(roleIds);
+            if (!roles.Any())
+                throw new BadRequestException("Roles not found");
+
+            var users = await GetUsers(userIds);
+            if (!users.Any())
+                throw new BadRequestException("Users not found");
+
+            var rolesProjectIds = roles.Select(role => role.ProjectId).ToHashSet();
+
+            var validationMessages = users
+                .Select(user =>
+                {
+                    var userProjectIds = user.UserProjects.Select(up => up.ProjectId).ToHashSet();
+                    var missingProjects = rolesProjectIds.Except(userProjectIds).ToList();
+
+                    return missingProjects.Any()
+                        ? $"User {user.Id} is missing projects: {string.Join(", ", missingProjects)}"
+                        : null;
+                })
+                .Where(message => message != null)
+                .ToList();
+
+            if (validationMessages.Any())
+                throw new BadRequestException($"Validation failed for the following users:\n{string.Join("\n", validationMessages)}");
+
+            var roleUsers = users
+                .SelectMany(user =>
+                    roles.Where(role => !user.RoleUsers.Any(ru => ru.UserId == user.Id && ru.RoleId == role.Id))
+                         .Select(role => new RoleUser { RoleId = role.Id, UserId = user.Id }))
+                .ToList();
+
+            if (!roleUsers.Any())
+                throw new BadRequestException("All users are already linked to these roles");
+
+            await _roleUserRepository.Add(roleUsers);
+            await _roleUserRepository.Commit();
+        }
+
+        public async Task UnlinkUsers(List<int> userIds, List<int> roleIds)
+        {
+            var roles = await GetRoles(roleIds);
+            if (!roles.Any())
+                throw new BadRequestException("Roles not found");
+
+            var users = await GetUsers(userIds);
+            if (!users.Any())
+                throw new BadRequestException("Users not found");
+
+            var rolesUsersToRemove = users.SelectMany(user => user.RoleUsers).Where(ru => roleIds.Contains(ru.RoleId));
+
+            if(!rolesUsersToRemove.Any())
+                return;
+
+            await _roleUserRepository.Delete(rolesUsersToRemove);
+            await _roleUserRepository.Commit();
+        }
+
+        private async Task<IEnumerable<Role>> GetRoles(List<int> roleIds)
+        {
+            roleIds = roleIds.Distinct().ToList();
+
+            var roles = await _roleRepository.GetAll(role => roleIds.Contains(role.Id));
+
+            if (roleIds.Count != roles.Count())
+                throw new BadRequestException($"Some informed roles was not found");
+
+            return roles;
+        }
+
+        private async Task<IEnumerable<User>> GetUsers(List<int> userIds)
+        {
+            userIds = userIds.Distinct().ToList();
+
+            var users = await _userRepository.GetAll(user => userIds.Contains(user.Id));
+
+            if (userIds.Count != users.Count())
+                throw new BadRequestException($"Some informed users was not found");
+
+            return users;
         }
     }
 
@@ -214,5 +297,7 @@ namespace Auth_API.Services
         Task RemoveEndpoints(int id, List<int> endpointIds);
         Task<IEnumerable<RoleResponse>> GetMany(GetManyRolesRequest request);
         Task<RoleWithRelationsResponse> Get(int id);
+        Task LinkUsers(List<int> userIds, List<int> roleIds);
+        Task UnlinkUsers(List<int> userIds, List<int> roleIds);
     }
 }

@@ -55,5 +55,19 @@ namespace Auth_API.Controllers
             var response = await _service.Get(request.Id);
             return Ok(response);
         }
+
+        [HttpPost("link-users")]
+        public async Task<IActionResult> LinkToUsers([FromBody] LinkUsersRequest request)
+        {
+            await _service.LinkUsers(request.UserIds, request.RoleIds);
+            return Ok();
+        }
+
+        [HttpPost("unlink-users")]
+        public async Task<IActionResult> RemoveFromRoles([FromBody] UnlinkUsersRequest request)
+        {
+            await _service.UnlinkUsers(request.UserIds, request.RoleIds);
+            return Ok();
+        }
     }
 }

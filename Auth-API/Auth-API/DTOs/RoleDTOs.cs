@@ -27,6 +27,18 @@ namespace Auth_API.DTOs
 
     }
 
+    public class LinkUsersRequest
+    {
+        public List<int> RoleIds { get; set; }
+        public List<int> UserIds { get; set; }
+    }
+
+    public class UnlinkUsersRequest
+    {
+        public List<int> RoleIds { get; set; }
+        public List<int> UserIds { get; set; }
+    }
+
     public class GetOneRoleRequest
     {
         public int Id { get; set; }
