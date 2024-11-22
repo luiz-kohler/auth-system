@@ -222,7 +222,14 @@ namespace Auth_API.Services
 
         public async Task VerifyUserIsProjectAdmin(int projectId)
         {
-            var user = await ExtractOrganizationUserOrThrow();
+            var user = await ExtractUserFromCurrentSession();
+
+            if (user == null)
+                throw new UnauthorizedAccessException("User is not authenticated.");
+
+            if (!user.OrganizationId.HasValue)
+                throw new UnauthorizedAccessException("User is not associated with any organization.");
+
             if (!user.RoleUsers.Any(ru => ru.Role.ProjectId == projectId &&
                                           ru.Role.Name == EDefaultRole.Admin.GetDescription()))
                 throw new UnauthorizedAccessException("User is not an admin for the specified project.");
@@ -230,25 +237,19 @@ namespace Auth_API.Services
 
         public async Task VerifyUserIsOrganizationAdmin(int organizationId)
         {
-            var user = await ExtractOrganizationUserOrThrow();
-
-            if (user.OrganizationId != organizationId)
-                throw new UnauthorizedAccessException("User is not part of the specified organization.");
-
-            if (user.IsUserOrganizationAdmin != true)
-                throw new UnauthorizedAccessException("User is not an admin for the specified organization.");
-        }
-
-        private async Task<User> ExtractOrganizationUserOrThrow()
-        {
             var user = await ExtractUserFromCurrentSession();
+
             if (user == null)
                 throw new UnauthorizedAccessException("User is not authenticated.");
 
             if (!user.OrganizationId.HasValue)
                 throw new UnauthorizedAccessException("User is not associated with any organization.");
 
-            return user;
+            if (user.OrganizationId != organizationId)
+                throw new UnauthorizedAccessException("User is not part of the specified organization.");
+
+            if (user.IsUserOrganizationAdmin != true)
+                throw new UnauthorizedAccessException("User is not an admin for the specified organization.");
         }
     }
 
