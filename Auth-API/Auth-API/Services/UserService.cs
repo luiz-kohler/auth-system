@@ -261,8 +261,6 @@ namespace Auth_API.Services
         Task Delete(int userId);
         Task LinkToProjects(int userId, List<int> projectIds);
         Task UnlinkFromProjects(int userId, List<int> projectIds);
-        Task LinkToRoles(int userId, List<int> roleIds);
-        Task UnlinkFromRoles(int userId, List<int> roleIds);
         Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
         Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request);
         Task<User> ExtractUserFromCurrentSession();
