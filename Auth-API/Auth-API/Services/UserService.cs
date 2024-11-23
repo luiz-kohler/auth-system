@@ -58,11 +58,7 @@ namespace Auth_API.Services
             await _userRepository.Add(user);
             await _userRepository.Commit();
 
-            return new()
-            {
-                Token = _tokenHandler.Generate(user),
-                RefreshToken = await _refreshTokenHandler.Generate(user)
-            };
+            return await GenerateUserTokenResponse(user);
         }
 
         public async Task<GetUserTokenResponse> Login(LoginRequest request)
@@ -72,14 +68,26 @@ namespace Auth_API.Services
             if (user == null || !_hashHandler.Verify(request.Password, user.Password))
                 throw new BadRequestException("Incorrect credentials");
 
-            return new()
+            return await GenerateUserTokenResponse(user);
+        }
+
+        private async Task<GetUserTokenResponse> GenerateUserTokenResponse(User user) => new()
+        {
+            Token = _tokenHandler.Generate(user),
+            RefreshToken = await _refreshTokenHandler.Generate(user)
+        };
+
+        public async Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request)
+        {
+            var token = await _refreshTokenHandler.Refresh(request.Token, request.RefreshToken);
+
+            return new GetUserTokenResponse
             {
-                Token = _tokenHandler.Generate(user),
-                RefreshToken = await _refreshTokenHandler.Generate(user)
+                Token = token,
+                RefreshToken = request.RefreshToken
             };
         }
 
-        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request)
         {
             var users = await _userRepository.GetAll(user =>
@@ -107,7 +115,6 @@ namespace Auth_API.Services
             });
         }
 
-        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task Delete(int userId)
         {
             var user = await _userRepository.GetSingle(user => user.Id == userId);
@@ -116,13 +123,24 @@ namespace Auth_API.Services
                 throw new BadRequestException("User not found");
 
             if (user.UserProjects.Any() || user.RoleUsers.Any())
-                throw new BadRequestException("You must remove this users from all roles and project");
+                throw new BadRequestException("You must unlink this user from all roles and project");
 
             await _userRepository.Delete(user);
             await _userRepository.Commit();
         }
 
-        // TODO: CHECK USER HAS PERMISSION TO DO THIS
+        public async Task<User> ExtractUserFromCurrentSession()
+        {
+            var userId = _tokenHandler.ExtractUserIdFromCurrentSession();
+            
+            var user = await _userRepository.GetSingle(user => user.Id == userId);
+
+            if (user == null)
+                throw new UnauthorizedAccessException();
+
+            return user;
+        }
+
         public async Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId)
         {
             var userId = _tokenHandler.ExtractUserIdFromCurrentSession();
@@ -133,32 +151,9 @@ namespace Auth_API.Services
             };
         }
 
-        public async Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request)
-        {
-            var token = await _refreshTokenHandler.Refresh(request.Token, request.RefreshToken);
-
-            return new GetUserTokenResponse
-            {
-                Token = token,
-                RefreshToken = request.RefreshToken
-            };
-        }
-
-        public async Task<User> ExtractUserFromCurrentSession()
-        {
-            var userId = _tokenHandler.ExtractUserIdFromCurrentSession();
-            return await _userRepository.GetSingle(user => user.Id == userId);
-        }
-
         public async Task VerifyUserIsProjectAdmin(int projectId)
         {
             var user = await ExtractUserFromCurrentSession();
-
-            if (user == null)
-                throw new UnauthorizedAccessException("User is not authenticated.");
-
-            if (!user.OrganizationId.HasValue)
-                throw new UnauthorizedAccessException("User is not associated with any organization.");
 
             if (!user.RoleUsers.Any(ru => ru.Role.ProjectId == projectId &&
                                           ru.Role.Name == EDefaultRole.Admin.GetDescription()))
@@ -168,9 +163,6 @@ namespace Auth_API.Services
         public async Task VerifyUserIsOrganizationAdmin(int organizationId)
         {
             var user = await ExtractUserFromCurrentSession();
-
-            if (user == null)
-                throw new UnauthorizedAccessException("User is not authenticated.");
 
             if (!user.OrganizationId.HasValue)
                 throw new UnauthorizedAccessException("User is not associated with any organization.");
