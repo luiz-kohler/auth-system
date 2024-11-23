@@ -115,24 +115,24 @@ namespace Auth_API.Services
             });
         }
 
-        public async Task Delete(int userId)
+        public async Task Delete(IEnumerable<int> userIds)
         {
-            var user = await _userRepository.GetSingle(user => user.Id == userId);
+            var users = await _userRepository.GetAll(user => userIds.Contains(user.Id));
 
-            if (user == null)
-                throw new BadRequestException("User not found");
+            if (!users.Any())
+                throw new BadRequestException("No users found with the provided IDs");
 
-            if (user.UserProjects.Any() || user.RoleUsers.Any())
-                throw new BadRequestException("You must unlink this user from all roles and project");
+            if (users.Any(user => user.UserProjects.Any() || user.RoleUsers.Any()))
+                throw new BadRequestException("One or more users have active relationships with roles or projects.");
 
-            await _userRepository.Delete(user);
+            await _userRepository.Delete(users);
             await _userRepository.Commit();
         }
 
         public async Task<User> ExtractUserFromCurrentSession()
         {
             var userId = _tokenHandler.ExtractUserIdFromCurrentSession();
-            
+
             var user = await _userRepository.GetSingle(user => user.Id == userId);
 
             if (user == null)
