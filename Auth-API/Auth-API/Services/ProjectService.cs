@@ -21,6 +21,7 @@ namespace Auth_API.Services
         private readonly IRoleUserRepository _roleUserRepository;
         private readonly IRoleEndpointRepository _roleEndpointRepository;
         private readonly ITokenHandler _tokenHandler;
+        private readonly IUserService _userService;
 
         public ProjectService(
             IUserRepository userRepository,
@@ -30,7 +31,8 @@ namespace Auth_API.Services
             IRoleRepository roleRepository,
             IRoleUserRepository roleUserRepository,
             IRoleEndpointRepository roleEndpointRepository,
-            ITokenHandler tokenHandler)
+            ITokenHandler tokenHandler,
+            IUserService userService)
         {
             _userRepository = userRepository;
             _projectRepository = projectRepository;
@@ -40,6 +42,7 @@ namespace Auth_API.Services
             _roleUserRepository = roleUserRepository;
             _roleEndpointRepository = roleEndpointRepository;
             _tokenHandler = tokenHandler;
+            _userService = userService;
         }
 
         public async Task Create(CreateProjectRequest request)
@@ -340,6 +343,66 @@ namespace Auth_API.Services
             return project.Roles.FirstOrDefault(r => r.Name == EDefaultRole.Admin.GetDescription())
                    ?? throw new InvalidOperationException("Admin role not found in the project.");
         }
+
+        public async Task LinkUsers(List<int> userIds, List<int> projectIds)
+        {
+            var users = await GetUsers(userIds);
+            if (!users.Any())
+                throw new BadRequestException("Users not found");
+                    
+            var projects = await GetProjects(projectIds);
+            if (!projects.Any())
+                throw new BadRequestException("Projects not found");
+
+            var usersProjects = users
+                .SelectMany(user => projectIds
+                    .Where(projectId => user.UserProjects.Any(up => up.ProjectId == projectId))
+                    .Select(projectId => new UserProject { ProjectId = projectId, UserId = user.Id }));
+
+            if (!usersProjects.Any())
+                return;
+
+            await _userProjectRepository.Add(usersProjects);
+            await _userProjectRepository.Commit();
+        }
+
+        public async Task UnlinkUsers(List<int> userIds, List<int> projectIds)
+        {
+            var users = await GetUsers(userIds);
+            if (!users.Any())
+                throw new BadRequestException("Users not found");
+
+            var usersProjects = users.SelectMany(user => user.UserProjects.Where(up => projectIds.Contains(up.ProjectId)).Select(up => up));
+
+            if (!usersProjects.Any())
+                return;
+
+            await _userProjectRepository.Delete(usersProjects);
+        }
+
+        private async Task<IEnumerable<Project>> GetProjects(List<int> projectIds)
+        {
+            projectIds = projectIds.Distinct().ToList();
+
+            var projects = await _projectRepository.GetAll(role => projectIds.Contains(role.Id));
+
+            if (projectIds.Count != projects.Count())
+                throw new BadRequestException($"Some informed projects was not found");
+
+            return projects;
+        }
+
+        private async Task<IEnumerable<User>> GetUsers(List<int> userIds)
+        {
+            userIds = userIds.Distinct().ToList();
+
+            var users = await _userRepository.GetAll(user => userIds.Contains(user.Id));
+
+            if (userIds.Count != users.Count())
+                throw new BadRequestException($"Some informed users was not found");
+
+            return users;
+        }
     }
 
     public interface IProjectService
@@ -349,5 +412,7 @@ namespace Auth_API.Services
         Task<IEnumerable<ProjectToGetManyResponse>> GetMany();
         Task<GetProjectByIdResponse> Get(int id);
         Task Delete(int id);
+        Task LinkUsers(List<int> userIds, List<int> projectIds);
+        Task UnlinkUsers(List<int> userIds, List<int> projectIds);
     }
 }

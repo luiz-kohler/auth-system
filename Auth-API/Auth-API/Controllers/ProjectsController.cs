@@ -35,17 +35,31 @@ namespace Auth_API.Controllers
             return Ok(response);
         }
 
-        [HttpPost("search-one")]
+        [HttpPost("search")]
         public async Task<IActionResult> Get([FromBody] GetOneProjectRequest request)
         {
             var response = await _service.Get(request.Id);
             return Ok(response);
         }
 
-        [HttpPost("delete-one")]
+        [HttpPost("delete")]
         public async Task<IActionResult> Delete([FromBody] DeleteOneProjectRequest request)
         {
             await _service.Delete(request.Id);
+            return Ok();
+        }
+
+        [HttpPost("link-users")]
+        public async Task<IActionResult> LinkUsers([FromBody] LinkUsersProjectRequest request)
+        {
+            await _service.LinkUsers(request.UserIds, request.RoleIds);
+            return Ok();
+        }
+
+        [HttpPost("unlink-users")]
+        public async Task<IActionResult> LinkUsers([FromBody] UnlinkUsersProjectRequest request)
+        {
+            await _service.UnlinkUsers(request.UserIds, request.RoleIds);
             return Ok();
         }
     }

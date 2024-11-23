@@ -123,75 +123,6 @@ namespace Auth_API.Services
         }
 
         // TODO: CHECK USER HAS PERMISSION TO DO THIS
-        public async Task LinkToProjects(int userId, List<int> projectIds)
-        {
-            var user = await _userRepository.GetSingle(user => user.Id == userId);
-
-            if (user == null)
-                throw new BadRequestException("User not found");
-
-            projectIds = projectIds.Distinct().ToList();
-
-            var linkedProjectIds = user.UserProjects
-                .Select(userProject => userProject.ProjectId)
-                .Intersect(projectIds)
-                .Distinct()
-                .ToList();
-
-            if (linkedProjectIds.Any())
-                throw new BadRequestException($"User is already linked with the projects: {string.Join(", ", linkedProjectIds)}");
-
-            var projects = await _projectRepository.GetAll(project => projectIds.Contains(project.Id));
-
-            if (projectIds.Count != projects.Count())
-                throw new BadRequestException($"Some informed projects was not found");
-
-            var newUserProjects = projects.Select(project => new UserProject { User = user, Project = project });
-
-            await _userProjectRepository.Add(newUserProjects);
-            await _userProjectRepository.Commit();
-        }
-
-        // TODO: CHECK USER HAS PERMISSION TO DO THIS
-        public async Task UnlinkFromProjects(int userId, List<int> projectIds)
-        {
-            var user = await _userRepository.GetSingle(user => user.Id == userId);
-
-            if (user == null)
-                throw new BadRequestException("User not found");
-
-            var distinctProjectIds = projectIds.Distinct().ToList();
-
-            var userProjectIds = user.UserProjects.Select(up => up.ProjectId).ToHashSet();
-            if (distinctProjectIds.Any(id => !userProjectIds.Contains(id)))
-                throw new BadRequestException("User is not linked in all informed projects");
-
-            var userProjectsToRemove = user.UserProjects
-                .Where(up => distinctProjectIds.Contains(up.ProjectId))
-                .ToList();
-
-            var projectsWithSingleAdmin = userProjectsToRemove
-                .Where(up => up.Project.Roles
-                    .Any(role => role.Name == EDefaultRole.Admin.GetDescription() &&
-                                 role.RoleUsers.Count == 1 &&
-                                 role.RoleUsers.Any(roleUser => roleUser.UserId == userId)))
-                .ToList();
-
-            if (projectsWithSingleAdmin.Any())
-                throw new BadRequestException("User is the only admin in some projects and can not be removed");
-
-            var userProjectsIdsToRemove = userProjectsToRemove.Select(userProject => userProject.ProjectId).ToList();
-
-            await _userProjectRepository
-                .DeleteWhere(userProject => userProject.UserId == userId
-                                         && userProjectsIdsToRemove.Contains(userProject.ProjectId));
-
-            await _roleUserRepository.DeleteWhere(roleUser => roleUser.UserId == userId && distinctProjectIds.Contains(roleUser.Role.ProjectId));
-
-            await _userProjectRepository.Commit();
-        }
-
-        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId)
         {
             var userId = _tokenHandler.ExtractUserIdFromCurrentSession();
@@ -202,7 +133,6 @@ namespace Auth_API.Services
             };
         }
 
-        // TODO: CHECK USER HAS PERMISSION TO DO THIS
         public async Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request)
         {
             var token = await _refreshTokenHandler.Refresh(request.Token, request.RefreshToken);
@@ -259,8 +189,6 @@ namespace Auth_API.Services
         Task<GetUserTokenResponse> Login(LoginRequest request);
         Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
         Task Delete(int userId);
-        Task LinkToProjects(int userId, List<int> projectIds);
-        Task UnlinkFromProjects(int userId, List<int> projectIds);
         Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
         Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request);
         Task<User> ExtractUserFromCurrentSession();

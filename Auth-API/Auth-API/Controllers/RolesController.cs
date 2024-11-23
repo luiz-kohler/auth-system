@@ -42,20 +42,6 @@ namespace Auth_API.Controllers
             return Ok();
         }
 
-        [HttpPost("search-many")]
-        public async Task<IActionResult> GetMany([FromBody] GetManyRolesRequest request)
-        {
-            var response = await _service.GetMany(request);
-            return Ok(response);
-        }
-
-        [HttpPost("search-one")]
-        public async Task<IActionResult> Get([FromBody] GetOneRoleRequest request)
-        {
-            var response = await _service.Get(request.Id);
-            return Ok(response);
-        }
-
         [HttpPost("link-users")]
         public async Task<IActionResult> LinkToUsers([FromBody] LinkUsersRequest request)
         {
@@ -68,6 +54,20 @@ namespace Auth_API.Controllers
         {
             await _service.UnlinkUsers(request.UserIds, request.RoleIds);
             return Ok();
+        }
+
+        [HttpPost("search-many")]
+        public async Task<IActionResult> GetMany([FromBody] GetManyRolesRequest request)
+        {
+            var response = await _service.GetMany(request);
+            return Ok(response);
+        }
+
+        [HttpPost("search-one")]
+        public async Task<IActionResult> Get([FromBody] GetOneRoleRequest request)
+        {
+            var response = await _service.Get(request.Id);
+            return Ok(response);
         }
     }
 }

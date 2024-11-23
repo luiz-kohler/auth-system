@@ -65,4 +65,16 @@ namespace Auth_API.DTOs
     public class UpsertProjectRequest : CreateProjectRequest
     {
     }
+
+    public class LinkUsersProjectRequest
+    {
+        public List<int> UserIds { get; set; }
+        public List<int> RoleIds { get; set; }
+    }
+
+    public class UnlinkUsersProjectRequest
+    {
+        public List<int> UserIds { get; set; }
+        public List<int> RoleIds { get; set; }
+    }
 }

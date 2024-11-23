@@ -12,18 +12,6 @@
         public int Id { get; set; }
     }
 
-    public class LinkToProjectsRequest
-    {
-        public int Id { get; set; }
-        public List<int> ProjectIds { get; set; }
-    }
-
-    public class UnlinkFromProjectsRequest
-    {
-        public int Id { get; set; }
-        public List<int> ProjectIds { get; set; }
-    }
-
     public class VerifyUserHasAccessRequest
     {
         public int EndpointId { get; set; }
