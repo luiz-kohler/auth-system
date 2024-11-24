@@ -180,7 +180,7 @@ namespace Auth_API.Services
         Task<GetUserTokenResponse> Create(CreateUserRequest request);
         Task<GetUserTokenResponse> Login(LoginRequest request);
         Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
-        Task Delete(int userId);
+        Task Delete(IEnumerable<int> userId);
         Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
         Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request);
         Task<User> ExtractUserFromCurrentSession();
