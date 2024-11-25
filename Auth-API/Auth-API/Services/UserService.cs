@@ -71,12 +71,6 @@ namespace Auth_API.Services
             return await GenerateUserTokenResponse(user);
         }
 
-        private async Task<GetUserTokenResponse> GenerateUserTokenResponse(User user) => new()
-        {
-            Token = _tokenHandler.Generate(user),
-            RefreshToken = await _refreshTokenHandler.Generate(user)
-        };
-
         public async Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request)
         {
             var token = await _refreshTokenHandler.Refresh(request.Token, request.RefreshToken);
@@ -87,6 +81,12 @@ namespace Auth_API.Services
                 RefreshToken = request.RefreshToken
             };
         }
+
+        private async Task<GetUserTokenResponse> GenerateUserTokenResponse(User user) => new()
+        {
+            Token = _tokenHandler.Generate(user),
+            RefreshToken = await _refreshTokenHandler.Generate(user)
+        };
 
         public async Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request)
         {
@@ -113,20 +113,6 @@ namespace Auth_API.Services
                     Name = role.Name
                 })
             });
-        }
-
-        public async Task Delete(IEnumerable<int> userIds)
-        {
-            var users = await _userRepository.GetAll(user => userIds.Contains(user.Id));
-
-            if (!users.Any())
-                throw new BadRequestException("No users found with the provided IDs");
-
-            if (users.Any(user => user.UserProjects.Any() || user.RoleUsers.Any()))
-                throw new BadRequestException("One or more users have active relationships with roles or projects.");
-
-            await _userRepository.Delete(users);
-            await _userRepository.Commit();
         }
 
         public async Task<User> ExtractUserFromCurrentSession()
@@ -179,11 +165,10 @@ namespace Auth_API.Services
     {
         Task<GetUserTokenResponse> Create(CreateUserRequest request);
         Task<GetUserTokenResponse> Login(LoginRequest request);
-        Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
-        Task Delete(IEnumerable<int> userId);
-        Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
         Task<GetUserTokenResponse> RefreshToken(RefreshTokenRequest request);
+        Task<IEnumerable<UserResponse>> GetMany(GetManyUsersRequest request);
         Task<User> ExtractUserFromCurrentSession();
+        Task<VerifyUserHasAccessResponse> VerifyUserHasAccess(int endpointId);
         Task VerifyUserIsProjectAdmin(int projectId);
         Task VerifyUserIsOrganizationAdmin(int organizationId);
     }

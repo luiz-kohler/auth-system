@@ -32,6 +32,14 @@ namespace Auth_API.Controllers
             return Ok(token);
         }
 
+        [Public]
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            var response = await _service.RefreshToken(request);
+            return Ok(response);
+        }
+
         [HttpPost("search-many")]
         public async Task<IActionResult> GetMany([FromBody] GetManyUsersRequest request)
         {
@@ -39,40 +47,11 @@ namespace Auth_API.Controllers
             return Ok(users);
         }
 
-        [HttpPost("delete")]
-        public async Task<IActionResult> Delete([FromBody] DeleteUserRequest request)
-        {
-            await _service.Delete(request.Id);
-            return Ok();
-        }
-
-        [HttpPost("link-to-project")]
-        public async Task<IActionResult> AddToProjects([FromBody] LinkToProjectsRequest request)
-        {
-            await _service.LinkToProjects(request.Id, request.ProjectIds);
-            return Ok();
-        }
-
-        [HttpPost("unlink-from-project")]
-        public async Task<IActionResult> RemoveFromProjects([FromBody] UnlinkFromProjectsRequest request)
-        {
-            await _service.UnlinkFromProjects(request.Id, request.ProjectIds);
-            return Ok();
-        }
-
         [Public]
         [HttpPost("has-access-to-endpoint")]
         public async Task<IActionResult> VerifyUserHasAccess([FromBody] VerifyUserHasAccessRequest request)
         {
             var response = await _service.VerifyUserHasAccess(request.EndpointId);
-            return Ok(response);
-        }
-
-        [Public]
-        [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
-        {
-            var response = await _service.RefreshToken(request);
             return Ok(response);
         }
     }
